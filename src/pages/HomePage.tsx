@@ -1,6 +1,6 @@
 import React from 'react';
-import { Layout, Typography, Row, Col, Card } from 'antd';
-import { BookOutlined } from '@ant-design/icons';
+import { Layout, Typography, Row, Col, Card, Button } from 'antd';
+import { BookOutlined, UploadOutlined } from '@ant-design/icons';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -17,12 +17,26 @@ const books = [
 ];
 
 const HomePage: React.FC = () => {
+    const handleUploadClick = () => {
+        // 此函数将用于处理上传逻辑或打开上传界面
+        console.log("打开上传界面");
+    };
+
     return (
         <Layout className="homepage">
             <Header className="header">
-                <Title level={2} style={{ color: 'white', margin: 0 }}>
-                    <BookOutlined /> RayBook
-                </Title>
+                <Row>
+                    <Title level={2} style={{ color: 'white', margin: 0 }}>
+                        <BookOutlined /> RayBook
+                    </Title>
+                <Button 
+                    icon={<UploadOutlined />} 
+                    type="primary" 
+                    style={{ marginLeft: '20px' }}
+                    onClick={handleUploadClick}>
+                    添加图书
+                </Button>
+                </Row>
             </Header>
             <Content className="content" style={{ padding: '0 50px' }}>
                 <Title level={3} style={{ margin: '16px 0' }}>最近添加的书籍</Title>
