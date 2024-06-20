@@ -42,6 +42,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "aws-sdk": "^2.1645.0",
     "electron-squirrel-startup": "^1.0.1"
   }
 }
