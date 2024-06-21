@@ -40,7 +40,7 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
                 </Row>
                 <Row gutter={16}>
                     <Col span={8}>
-                        <Form.Item name="author" label="作者" rules={[{ required: true, message: '请输入作者名' }]}>
+                        <Form.Item name="author" label="作者" rules={[{ message: '请输入作者名' }]}>
                             <Input />
                         </Form.Item>
                     </Col>
