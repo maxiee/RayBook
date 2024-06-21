@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Layout, Typography, Row, Col, Card, Button } from 'antd';
 import { BookOutlined, UploadOutlined } from '@ant-design/icons';
+import UploadBookModal from './modal/UploadBookModal';
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
@@ -17,10 +18,15 @@ const books = [
 ];
 
 const HomePage: React.FC = () => {
+    const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+
     const handleUploadClick = () => {
-        // 此函数将用于处理上传逻辑或打开上传界面
-        console.log("打开上传界面");
+        setIsUploadModalOpen(true);
     };
+
+    const handleCloseModal = () => {
+        setIsUploadModalOpen(false);
+    }
 
     return (
         <Layout className="homepage">
@@ -38,6 +44,7 @@ const HomePage: React.FC = () => {
                 </Button>
                 </Row>
             </Header>
+            <UploadBookModal open={isUploadModalOpen} onClose={handleCloseModal} />
             <Content className="content" style={{ padding: '0 50px' }}>
                 <Title level={3} style={{ margin: '16px 0' }}>最近添加的书籍</Title>
                 <Row gutter={[16, 16]}>
