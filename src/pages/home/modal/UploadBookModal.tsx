@@ -5,12 +5,26 @@ import { ipcRenderer } from 'electron';
 
 const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ open, onClose }) => {
     const [form] = Form.useForm();
-    const [coverUrl, setCoverUrl] = useState<string | null>(null);
+    const [coverBase64, setCoverBase64] = useState<string | null>(null);
 
-    const handleSubmit = (values: any) => {
-        console.log("提交表单：", values);
-        onClose();
-    };
+    const handleSubmit = async (values: any) => {
+        try {
+          const result = await ipcRenderer.invoke('add-book', {
+            ...values,
+            coverBase64: coverBase64,
+            epubPath: values.epubPath // 假设我们在上传 EPUB 时已经保存了文件路径
+          });
+          if (result.success) {
+            message.success(result.message);
+            onClose();
+          } else {
+            message.error(result.message);
+          }
+        } catch (error) {
+          console.error('提交表单时出错:', error);
+          message.error('提交表单失败');
+        }
+      };
 
     const handleFileUpload = async () => {
         try {
@@ -19,7 +33,7 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
             if (result.success) {
                 form.setFieldsValue(result.metadata);
                 if (result.metadata.coverBase64) {
-                    setCoverUrl(result.metadata.coverBase64);
+                    setCoverBase64(result.metadata.coverBase64);
                 }
                 message.success('成功读取电子书信息');
             } else {
@@ -98,9 +112,9 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
                 <Row gutter={16}>
                     <Col span={12}>
                         <Form.Item name="cover" label="封面图">
-                            {coverUrl ? (
+                            {coverBase64 ? (
                                 <Image
-                                    src={coverUrl}
+                                    src={coverBase64}
                                     alt="Book Cover"
                                     style={{ maxWidth: '100%', maxHeight: '300px' }}
                                 />
