@@ -1,24 +1,35 @@
-import React, { useState } from 'react';
-import { Layout, Typography, Row, Col, Card, Button } from 'antd';
+import React, { useEffect, useState } from 'react';
+import { Layout, Typography, Row, Col, Card, Button, Pagination } from 'antd';
 import { BookOutlined, UploadOutlined } from '@ant-design/icons';
 import UploadBookModal from './modal/UploadBookModal';
+
+const { ipcRenderer } = window.require('electron');
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
 const { Meta } = Card;
 
-// 假数据
-const books = [
-    { id: 1, title: '1984', author: 'George Orwell', coverUrl: 'https://placekitten.com/200/300' },
-    { id: 2, title: 'To Kill a Mockingbird', author: 'Harper Lee', coverUrl: 'https://placekitten.com/200/301' },
-    { id: 3, title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', coverUrl: 'https://placekitten.com/200/302' },
-    { id: 4, title: 'Pride and Prejudice', author: 'Jane Austen', coverUrl: 'https://placekitten.com/200/303' },
-    { id: 5, title: 'The Catcher in the Rye', author: 'J.D. Salinger', coverUrl: 'https://placekitten.com/200/304' },
-    { id: 6, title: 'Moby-Dick', author: 'Herman Melville', coverUrl: 'https://placekitten.com/200/305' },
-];
-
 const HomePage: React.FC = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+    const [books, setBooks] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [totalBooks, setTotalBooks] = useState(0);
+    const pageSize = 10;
+
+    const fetchLatestBooks = async (page: number) => {
+        const result = await ipcRenderer.invoke('get-latest-books', page, pageSize);
+        if (result.success) {
+            setBooks(result.data);
+            setTotalBooks(result.total);
+            setCurrentPage(result.currentPage);
+        } else {
+            console.error('Failed to fetch latest books:', result.message);
+        }
+    };
+
+    useEffect(() => {
+        fetchLatestBooks(currentPage);
+    }, [currentPage]);
 
     const handleUploadClick = () => {
         setIsUploadModalOpen(true);
@@ -26,7 +37,11 @@ const HomePage: React.FC = () => {
 
     const handleCloseModal = () => {
         setIsUploadModalOpen(false);
-    }
+    };
+
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     return (
         <Layout className="homepage">
@@ -35,31 +50,52 @@ const HomePage: React.FC = () => {
                     <Title level={2} style={{ color: 'white', margin: 0 }}>
                         <BookOutlined /> RayBook
                     </Title>
-                <Button 
-                    icon={<UploadOutlined />} 
-                    type="primary" 
-                    style={{ marginLeft: '20px' }}
-                    onClick={handleUploadClick}>
-                    添加图书
-                </Button>
+                    <Button
+                        icon={<UploadOutlined />}
+                        type="primary"
+                        style={{ marginLeft: '20px' }}
+                        onClick={handleUploadClick}>
+                        添加图书
+                    </Button>
                 </Row>
             </Header>
             <UploadBookModal open={isUploadModalOpen} onClose={handleCloseModal} />
             <Content className="content" style={{ padding: '0 50px' }}>
                 <Title level={3} style={{ margin: '16px 0' }}>最近添加的书籍</Title>
                 <Row gutter={[16, 16]}>
-                    {books.map(book => (
-                        <Col key={book.id} xs={24} sm={12} md={8} lg={6} xl={4}>
-                            <Card
-                                hoverable
-                                cover={<img alt={book.title} src={book.coverUrl} />}
-                                style={{ width: 200 }}
-                            >
-                                <Meta title={book.title} description={book.author} />
-                            </Card>
-                        </Col>
-                    ))}
+                    {books.map(book => {
+                        console.log(book);
+                        console.log(book.title);
+                        return (
+                            <Col key={book.id} xs={24} sm={12} md={8} lg={6} xl={4}>
+                                <Card
+                                    hoverable
+                                    cover={book.coverImage && book.coverImage.data ? (
+                                        <img
+                                            alt={book.title || 'Book cover'}
+                                            src={`data:${book.coverImage.contentType};base64,${book.coverImage.data}`}
+                                            style={{ height: 300, objectFit: 'cover' }}
+                                        />
+                                    ) : (
+                                        <div style={{ height: 300, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                            No Cover
+                                        </div>
+                                    )}
+                                    style={{ width: 200 }}
+                                >
+                                    <Meta title={book.title} description={book.author} />
+                                </Card>
+                            </Col>
+                        );
+                    })}
                 </Row>
+                <Pagination
+                    current={currentPage}
+                    total={totalBooks}
+                    pageSize={pageSize}
+                    onChange={handlePageChange}
+                    style={{ marginTop: '20px', textAlign: 'center' }}
+                />
             </Content>
         </Layout>
     );

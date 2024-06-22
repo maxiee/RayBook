@@ -6,13 +6,15 @@ import { ipcRenderer } from 'electron';
 const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ open, onClose }) => {
     const [form] = Form.useForm();
     const [coverBase64, setCoverBase64] = useState<string | null>(null);
+    const [coverMimeType, setCoverMimeType] = useState<string | null>(null);
 
     const handleSubmit = async (values: any) => {
         try {
           const result = await ipcRenderer.invoke('add-book', {
             ...values,
             coverBase64: coverBase64,
-            epubPath: values.epubPath // 假设我们在上传 EPUB 时已经保存了文件路径
+            contentType: coverMimeType
+            // epubPath: values.epubPath // 假设我们在上传 EPUB 时已经保存了文件路径
           });
           if (result.success) {
             message.success(result.message);
@@ -35,6 +37,7 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
                 if (result.metadata.coverBase64) {
                     setCoverBase64(result.metadata.coverBase64);
                 }
+                setCoverMimeType(result.metadata.coverMimeType);
                 message.success('成功读取电子书信息');
             } else {
                 message.error('读取电子书信息失败');

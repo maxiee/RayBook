@@ -122,9 +122,10 @@ ipcMain.handle('add-book', async (event, bookData) => {
     if (bookData.coverBase64) {
       const base64Data = bookData.coverBase64.replace(/^data:image\/\w+;base64,/, "");
       const buffer = Buffer.from(base64Data, 'base64');
+      console.log('coverMimeType' + bookData.contentType);
       coverImage = {
         data: buffer,
-        contentType: bookData.coverMimeType
+        contentType: bookData.contentType
       };
     }
 
@@ -147,5 +148,40 @@ ipcMain.handle('add-book', async (event, bookData) => {
   } catch (error) {
     console.error('添加图书时出错:', error);
     return { success: false, message: '添加图书失败' };
+  }
+});
+
+// 添加新的 IPC 接口用于分页加载最新添加的书籍
+ipcMain.handle('get-latest-books', async (event, page = 1, pageSize = 10) => {
+  try {
+    const skip = (page - 1) * pageSize;
+    const books = await Book.find({})
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(pageSize)
+      .lean() // 使用 lean() 来获取普通 JavaScript 对象
+      .select('title author coverImage');
+    
+    // 转换 coverImage.data 为 Base64 字符串
+    const processedBooks = books.map(book => ({
+      ...book,
+      coverImage: book.coverImage ? {
+        contentType: book.coverImage.contentType,
+        data: book.coverImage.data.toString('base64')
+      } : null
+    }));
+
+    const total = await Book.countDocuments();
+
+    return {
+      success: true,
+      data: processedBooks,
+      total,
+      currentPage: page,
+      pageSize,
+    };
+  } catch (error) {
+    console.error('Error fetching latest books:', error);
+    return { success: false, message: '获取最新书籍失败' };
   }
 });
