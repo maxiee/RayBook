@@ -1,10 +1,11 @@
-import React from 'react';
-import { Modal, Form, Input, Upload, Button, InputNumber, Row, Col, message } from 'antd';
+import React, { useState } from 'react';
+import { Modal, Form, Input, Upload, Button, InputNumber, Image, Row, Col, message } from 'antd';
 import { UploadOutlined } from '@ant-design/icons';
 import { ipcRenderer } from 'electron';
 
 const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ open, onClose }) => {
     const [form] = Form.useForm();
+    const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
     const handleSubmit = (values: any) => {
         console.log("提交表单：", values);
@@ -17,6 +18,9 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
             console.log(result)
             if (result.success) {
                 form.setFieldsValue(result.metadata);
+                if (result.metadata.coverBase64) {
+                    setCoverUrl(result.metadata.coverBase64);
+                }
                 message.success('成功读取电子书信息');
             } else {
                 message.error('读取电子书信息失败');
@@ -28,8 +32,7 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
         
     };
 
-    return (
-        <Modal
+    return <Modal
             title="添加图书"
             open={open}
             onCancel={onClose}
@@ -92,18 +95,30 @@ const UploadBookModal: React.FC<{ open: boolean; onClose: () => void; }> = ({ op
                         </Form.Item>
                     </Col>
                 </Row>
-                <Form.Item name="cover" label="封面图">
-                    <Upload>
-                        <Button icon={<UploadOutlined />}>点击上传封面</Button>
-                    </Upload>
-                    
-                </Form.Item>
-                <Button icon={<UploadOutlined />}
-                        onClick={handleFileUpload}
-                    >点击上传电子书</Button>
+                <Row gutter={16}>
+                    <Col span={12}>
+                        <Form.Item name="cover" label="封面图">
+                            {coverUrl ? (
+                                <Image
+                                    src={coverUrl}
+                                    alt="Book Cover"
+                                    style={{ maxWidth: '100%', maxHeight: '300px' }}
+                                />
+                            ) : (
+                                <Upload>
+                                    <Button icon={<UploadOutlined />}>点击上传封面</Button>
+                                </Upload>
+                            )}
+                        </Form.Item>
+                    </Col>
+                    <Col span={12}>
+                        <Button icon={<UploadOutlined />} onClick={handleFileUpload}>
+                            点击上传电子书
+                        </Button>
+                    </Col>
+                </Row>
             </Form>
         </Modal>
-    );
 };
 
 export default UploadBookModal;
