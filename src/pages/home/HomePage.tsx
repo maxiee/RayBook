@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { Layout, Typography, Row, Col, Card, Button, Pagination } from 'antd';
 import { BookOutlined, UploadOutlined } from '@ant-design/icons';
 import UploadBookModal from './modal/UploadBookModal';
+import BookCard from './components/BookCard';
+import { IBook } from '../../types/Book';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -11,9 +13,10 @@ const { Meta } = Card;
 
 const HomePage: React.FC = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-    const [books, setBooks] = useState([]);
+    const [books, setBooks] = useState<IBook[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalBooks, setTotalBooks] = useState(0);
+    const [currentBookId, setCurrentBookId] = useState<string | null>(null);
     const pageSize = 10;
 
     const fetchLatestBooks = async (page: number) => {
@@ -31,9 +34,16 @@ const HomePage: React.FC = () => {
         fetchLatestBooks(currentPage);
     }, [currentPage]);
 
-    const handleUploadClick = () => {
+    const handleUploadClickNew = () => {
+        setCurrentBookId(null);
         setIsUploadModalOpen(true);
     };
+
+    const handleUploadClickEdit = (id: string) => {
+        console.log("handleUploadClickEdit id: ", id);
+        setCurrentBookId(id);
+        setIsUploadModalOpen(true);
+    }
 
     const handleCloseModal = () => {
         setIsUploadModalOpen(false);
@@ -54,12 +64,12 @@ const HomePage: React.FC = () => {
                         icon={<UploadOutlined />}
                         type="primary"
                         style={{ marginLeft: '20px' }}
-                        onClick={handleUploadClick}>
+                        onClick={handleUploadClickNew}>
                         添加图书
                     </Button>
                 </Row>
             </Header>
-            <UploadBookModal open={isUploadModalOpen} onClose={handleCloseModal} />
+            <UploadBookModal open={isUploadModalOpen} onClose={handleCloseModal} bookId={currentBookId} />
             <Content className="content" style={{ padding: '0 50px' }}>
                 <Title level={3} style={{ margin: '16px 0' }}>最近添加的书籍</Title>
                 <Row gutter={[16, 16]}>
@@ -67,24 +77,10 @@ const HomePage: React.FC = () => {
                         console.log(book);
                         console.log(book.title);
                         return (
-                            <Col key={book.id} xs={24} sm={12} md={8} lg={6} xl={4}>
-                                <Card
-                                    hoverable
-                                    cover={book.coverImage && book.coverImage.data ? (
-                                        <img
-                                            alt={book.title || 'Book cover'}
-                                            src={`data:${book.coverImage.contentType};base64,${book.coverImage.data}`}
-                                            style={{ height: 300, objectFit: 'cover' }}
-                                        />
-                                    ) : (
-                                        <div style={{ height: 300, background: '#f0f0f0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                                            No Cover
-                                        </div>
-                                    )}
-                                    style={{ width: 200 }}
-                                >
-                                    <Meta title={book.title} description={book.author} />
-                                </Card>
+                            <Col key={book._id} xs={24} sm={12} md={8} lg={6} xl={4}>
+                                <BookCard book={book} onEdit={() => {
+                                    handleUploadClickEdit(book._id);
+                                }} />
                             </Col>
                         );
                     })}

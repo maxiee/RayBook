@@ -14,7 +14,7 @@ export interface IBook extends Document {
     data: Buffer,
     contentType: string
   };
-  epubPath?: string;
+  files: Schema.Types.ObjectId[];
 }
 
 const BookSchema: Schema = new Schema({
@@ -31,7 +31,7 @@ const BookSchema: Schema = new Schema({
     data: Buffer,
     contentType: String
   },
-  epubPath: String
+  files: [{ type: Schema.Types.ObjectId, ref: 'BookFile' }]
 });
 
 export default mongoose.model<IBook>('Book', BookSchema);
