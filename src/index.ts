@@ -114,7 +114,7 @@ ipcMain.handle('update-book', async (event, bookData: Partial<IBookGUI>) => {
       bookData._id,
       { $set: {
         ...bookData,
-        files: bookData.files.map(fileId => new mongoose.Schema.Types.ObjectId(fileId._id))
+        files: bookData.files.map(fileId => new mongoose.Types.ObjectId(fileId._id))
       }},
       { new: true, runValidators: true }
     );
@@ -138,7 +138,7 @@ ipcMain.handle('update-book', async (event, bookData: Partial<IBookGUI>) => {
 });
 
 // 上传图书文件
-ipcMain.handle('upload-book-file', async () => {
+ipcMain.handle('upload-book-file', async (event, bookId: string) => {
   try {
     const result = await dialog.showOpenDialog({
       properties: ['openFile'],
@@ -164,6 +164,17 @@ ipcMain.handle('upload-book-file', async () => {
     const bucketName = 'raybook';
     const objectName = `books/${Date.now()}_${fileName}`;
 
+    console.log('newBookFile bookId: ', bookId);
+    // 创建 BookFile 并保存
+    const newBookFile = new BookFile({
+      filename: fileName,
+      format: fileExtension,
+      size: fileStats.size,
+      path: objectName,
+      book: new mongoose.Types.ObjectId(bookId)
+    });
+    await newBookFile.save();
+
     // 上传文件到 MinIO
     await s3Client.upload({
       Bucket: bucketName,
@@ -175,6 +186,7 @@ ipcMain.handle('upload-book-file', async () => {
     return {
       success: true,
       file: {
+        _id: newBookFile._id.toString(),
         filename: fileName,
         format: fileExtension,
         size: fileStats.size,

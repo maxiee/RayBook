@@ -79,11 +79,12 @@ const UploadBookModal: React.FC<{
     // 上传电子书文件
     const handleFileUpload = async () => {
         try {
-            const result = await ipcRenderer.invoke('upload-book-file');
+            const result = await ipcRenderer.invoke('upload-book-file', bookId || '');
             if (result.success) {
                 // 检查文件是否已存在
                 const fileExists = bookFiles.some(file => file.path === result.file.path);
                 if (!fileExists) {
+                    console.log("handleFileUpload result.file: ", result.file);
                     setBookFiles([...bookFiles, result.file]);
                     message.success('成功添加电子书文件');
                 } else {
