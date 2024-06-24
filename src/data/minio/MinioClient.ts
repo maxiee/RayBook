@@ -16,16 +16,31 @@ const s3Client = new AWS.S3({
     secretAccessKey: minioSecretKey,
 });
 
-// 检查 RayBook 桶是否存在，不存在则创建
-s3Client.createBucket({
-    Bucket: 'raybook',
-}, (err, data) => {
-    if (err) {
-        console.error('Error creating bucket:', err);
-    } else {
-        console.log('Bucket created:', data);
+async function checkAndCreateBucket(bucketName: string) {
+    const params = { Bucket: bucketName };
+  
+    try {
+      // 尝试获取 Bucket 信息以检查其是否存在
+      await s3Client.headBucket(params).promise();
+      console.log(`Bucket "${bucketName}" 已经存在。`);
+    } catch (error) {
+      // 如果 Bucket 不存在，则根据错误类型决定操作
+      if (error.statusCode === 404) {
+        console.log(`Bucket "${bucketName}" 不存在，正在尝试创建...`);
+        try {
+          await s3Client.createBucket(params).promise();
+          console.log(`Bucket "${bucketName}" 创建成功。`);
+        } catch (createError) {
+          console.error("创建 Bucket 失败：", createError);
+        }
+      } else {
+        console.error("检查 Bucket 时发生错误：", error);
+      }
     }
-});
+  }
+
+// 检查 RayBook 桶是否存在，不存在则创建
+checkAndCreateBucket('raybook');
 
 
 export default s3Client;
