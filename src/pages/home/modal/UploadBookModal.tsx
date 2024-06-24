@@ -198,7 +198,7 @@ const UploadBookModal: React.FC<{
                     <Form.Item name="cover" label="封面图">
                         {coverBase64 ? (
                             <Image
-                                src={coverBase64}
+                                src={`data:${coverMimeType};base64,${coverBase64}`}
                                 alt="Book Cover"
                                 style={{ maxWidth: '100%', maxHeight: '300px' }}
                             />
