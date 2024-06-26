@@ -20,12 +20,4 @@ export class DtoUtils {
 
     return result as T;
   }
-
-  static toTransferableBook(book: IBook): IBook {
-    return this.toTransferable(book);
-  }
-
-  static toTransferableBookFile(bookFile: IBookFile): IBookFile {
-    return this.toTransferable(bookFile);
-  }
 }
