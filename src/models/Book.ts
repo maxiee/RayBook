@@ -18,7 +18,7 @@ export interface IBookBase {
 }
 
 export interface IBook extends IBookBase, Document {
-  files: Schema.Types.ObjectId[]
+  files: IBookFile[] | Schema.Types.ObjectId[]
 }
 
 const BookSchema: Schema = new Schema({
@@ -35,13 +35,11 @@ const BookSchema: Schema = new Schema({
     data: Buffer,
     contentType: String
   },
-  files: [{ type: Schema.Types.ObjectId, ref: 'BookFile' }]
 });
 
 // 用于渲染进程的类型
 export interface RendererProcessBook extends IBookBase {
   _id: string;
-  files: string[];
   coverImage?: {
     data: string;
     contentType: string;

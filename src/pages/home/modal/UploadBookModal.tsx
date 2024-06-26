@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Modal, Form, Input, Upload, Button, InputNumber, Image, Row, Col, message, Table } from 'antd';
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ipcRenderer } from 'electron';
-import { IBook, IBookFile } from '../../../types/Book';
+import { IBookFile } from '../../../models/BookFile';
 
 const UploadBookModal: React.FC<{
     open: boolean;
