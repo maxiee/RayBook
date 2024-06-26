@@ -5,11 +5,23 @@ import path from "path";
 export class CoverIamgeRepostory {
     static bucketName: string = 'book-cover-images';
 
+    /**
+     * Constructs the cover image filename for a book.
+     * @param bookId - The ID of the book.
+     * @param originalFilename - The original filename of the cover image.
+     * @returns The constructed cover image filename.
+     */
     static constructCoverImageFilename(bookId: string, originalFilename: string): string {
         const originalExtension = path.extname(originalFilename);
         return `${bookId}${originalExtension}`;
     }
 
+    /**
+     * Uploads a book cover image to the specified book ID.
+     * @param {string} bookId - The ID of the book.
+     * @param {string} filepath - The file path of the cover image.
+     * @returns {Promise<boolean>} - A promise that resolves to true if the upload is successful, false otherwise.
+     */
     async uploadBookCoverImage(bookId: string, filepath: string): Promise<boolean> {
         const epub: EPub = await EPub.createAsync(filepath);
 
