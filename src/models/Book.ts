@@ -1,7 +1,7 @@
-import mongoose, { Schema, Document, Types } from 'mongoose';
-import { IBookFile } from './BookFile';
+import mongoose, { Schema, Document } from 'mongoose';
 
-export interface IBookBase {
+export interface IBook extends Document {
+  _id: Schema.Types.ObjectId | string;
   title: string;
   subtitle?: string;
   series?: string;
@@ -11,14 +11,6 @@ export interface IBookBase {
   publisher?: string;
   publicationYear?: number;
   isbn?: string;
-  coverImage?: {
-    data: Buffer | string,
-    contentType: string
-  };
-}
-
-export interface IBook extends IBookBase, Document {
-  files: IBookFile[] | Schema.Types.ObjectId[]
 }
 
 const BookSchema: Schema = new Schema({
@@ -37,13 +29,6 @@ const BookSchema: Schema = new Schema({
   },
 });
 
-// 用于渲染进程的类型
-export interface RendererProcessBook extends IBookBase {
-  _id: string;
-  coverImage?: {
-    data: string;
-    contentType: string;
-  };
-};
+
 
 export default mongoose.model<IBook>('Book', BookSchema);
