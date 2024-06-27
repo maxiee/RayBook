@@ -1,10 +1,12 @@
 import { BookFile, IBookFile } from "../models/BookFile";
 import Book, { IBook } from "../models/Book";
 import { SchemaTypes } from "mongoose";
+import { toObjectId } from "../utils/DtoUtils";
 
 export class BookRepository {
-    async findBookById(id: string): Promise<IBook | null> {
-        return await Book.findById(id);
+    async findBookById(id: Id): Promise<IBook | null> {
+        console.log("BookRepository findBookById id: ", id);
+        return await Book.findById(toObjectId(id)).lean();
     }
 
     async findAll(page: number, pageSize: number): Promise<{ books: IBook[], total: number; }> {

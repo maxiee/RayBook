@@ -6,7 +6,7 @@ const { ipcRenderer } = window.require('electron');
 
 interface BookCardProps {
     book: IBook;
-    onEdit: (id: string) => void;
+    onEdit: (id: Id) => void;
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
@@ -28,7 +28,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
         {
             key: 'edit',
             label: (
-                <a onClick={() => onEdit(book._id as string)}>
+                <a onClick={() => onEdit(book._id)}>
                     <EditOutlined />
                     编辑
                 </a>

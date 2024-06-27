@@ -16,7 +16,7 @@ const HomePage: React.FC = () => {
     const [books, setBooks] = useState<IBook[]>([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [totalBooks, setTotalBooks] = useState(0);
-    const [currentBookId, setCurrentBookId] = useState<string | null>(null);
+    const [currentBookId, setCurrentBookId] = useState<Id | null>(null);
     const pageSize = 10;
 
     const fetchLatestBooks = async (page: number) => {
@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
         setIsUploadModalOpen(true);
     };
 
-    const handleUploadClickEdit = (id: string) => {
+    const handleUploadClickEdit = (id: Id) => {
         console.log("handleUploadClickEdit id: ", id);
         setCurrentBookId(id);
         setIsUploadModalOpen(true);
@@ -78,9 +78,9 @@ const HomePage: React.FC = () => {
                         console.log(book);
                         console.log(book.title);
                         return (
-                            <Col key={book._id as string} xs={24} sm={12} md={8} lg={6} xl={4}>
+                            <Col key={book._id.buffer.toString()} xs={24} sm={12} md={8} lg={6} xl={4}>
                                 <BookCard book={book} onEdit={() => {
-                                    handleUploadClickEdit(book._id as string);
+                                    handleUploadClickEdit(book._id);
                                 }} />
                             </Col>
                         );

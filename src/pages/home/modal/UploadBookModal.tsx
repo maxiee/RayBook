@@ -8,7 +8,7 @@ import { IBook } from '../../../models/Book';
 const UploadBookModal: React.FC<{
     open: boolean;
     onClose: () => void;
-    bookId: string | null;
+    bookId: Id | null;
 }> = ({ open, onClose, bookId }) => {
     const [form] = Form.useForm();
     const [book, setBook] = useState<IBook | null>(null);
@@ -29,7 +29,7 @@ const UploadBookModal: React.FC<{
         }
     }, [bookId]);
 
-    const fetchBookDetails = async (id: string) => {
+    const fetchBookDetails = async (id: Id) => {
         try {
             // 获取并设置书籍详情
             const _book: IBook | null = await ipcRenderer.invoke('get-book-details', id);
@@ -228,7 +228,14 @@ const UploadBookModal: React.FC<{
                         <Button icon={<UploadOutlined />} onClick={handleFileUpload}>
                             添加电子书文件
                         </Button>
-                        <Table dataSource={bookFiles} columns={columns} />
+                        <Table
+                            dataSource={bookFiles.map(e => {
+                                return {
+                                    ...e,
+                                    key: e._id,
+                                };
+                            })}
+                            columns={columns} />
                     </Form.Item>
                 </Col>
             </Row>
