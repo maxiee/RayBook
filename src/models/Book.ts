@@ -11,6 +11,7 @@ export interface IBook extends Document {
   publisher?: string;
   publicationYear?: number;
   isbn?: string;
+  coverImagePath?: string;
 }
 
 const BookSchema: Schema = new Schema({
@@ -23,10 +24,7 @@ const BookSchema: Schema = new Schema({
   publisher: String,
   publicationYear: Number,
   isbn: String,
-  coverImage: {
-    data: Buffer,
-    contentType: String
-  },
+  coverImagePath: String,
 });
 
 export default mongoose.model<IBook>('Book', BookSchema);

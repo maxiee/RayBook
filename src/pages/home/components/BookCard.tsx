@@ -1,7 +1,8 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Card, Menu, Dropdown, MenuProps } from 'antd';
 import { MoreOutlined, EditOutlined } from '@ant-design/icons';
-import { IBook } from '../../../types/Book';
+import { IBook } from '../../../models/Book';
+const { ipcRenderer } = window.require('electron');
 
 interface BookCardProps {
     book: IBook;
@@ -9,11 +10,25 @@ interface BookCardProps {
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
+    const [coverImage, setCoverImage] = React.useState<Buffer | null>(null);
+
+    // 获取图书封面
+    const getCoverImage = async (coverIamgePath: string) => {
+        const result = await ipcRenderer.invoke('get-book-cover', coverIamgePath);
+        if (result.success) {
+            setCoverImage(result.data);
+        }
+    }
+    
+    useEffect(() => {
+        getCoverImage(book._id as string);
+    }, [book.coverImagePath]);
+
     const items: MenuProps['items'] = [
         {
           key: 'edit',
           label: (
-            <a onClick={() => onEdit(book._id)}>
+            <a onClick={() => onEdit(book._id as string)}>
               <EditOutlined/>
               编辑
             </a>

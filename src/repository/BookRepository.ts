@@ -1,28 +1,27 @@
 import { BookFile, IBookFile } from "../models/BookFile";
-import { BookDTO } from "../dto/BookDTO";
-import Book, { IBook, RendererProcessBook } from "../models/Book";
+import Book, { IBook } from "../models/Book";
 import { SchemaTypes } from "mongoose";
 
 export class BookRepository {
-    async findById(id: string): Promise<IBook | null> {
-        return await Book.findById(id).populate('files').exec();
+    async findBookById(id: string): Promise<IBook | null> {
+        return await Book.findById(id);
     }
 
     async findAll(page: number, pageSize: number): Promise<{ books: IBook[], total: number; }> {
         const skip = (page - 1) * pageSize;
         const [books, total] = await Promise.all([
-            Book.find().skip(skip).limit(pageSize).populate('files').exec(),
+            Book.find().skip(skip).limit(pageSize),
             Book.countDocuments(),
         ]);
         return { books, total };
     }
 
-    async create(book: Partial<IBook>): Promise<IBook> {
+    async createNewBook(book: IBook): Promise<IBook> {
         return await Book.create(book);
     }
 
-    async update(id: string, book: Partial<IBook>): Promise<IBook | null> {
-        return await Book.findByIdAndUpdate(id, book, { new: true }).populate('files').exec();
+    async updateBook(book: IBook): Promise<IBook | null> {
+        return await Book.findByIdAndUpdate(book._id, book, { new: true });
     }
 
     async delete(id: string): Promise<boolean> {

@@ -1,0 +1,1 @@
+const BUCKET_NAME = 'raybook';
