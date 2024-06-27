@@ -21,7 +21,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
     };
 
     useEffect(() => {
-        getCoverImage(book._id as string);
+        if (book.coverImagePath) getCoverImage(book.coverImagePath as string);
     }, [book.coverImagePath]);
 
     const items: MenuProps['items'] = [

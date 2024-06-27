@@ -10,7 +10,7 @@ export class BookRepository {
     async findAll(page: number, pageSize: number): Promise<{ books: IBook[], total: number; }> {
         const skip = (page - 1) * pageSize;
         const [books, total] = await Promise.all([
-            Book.find().skip(skip).limit(pageSize),
+            Book.find().skip(skip).limit(pageSize).lean(),
             Book.countDocuments(),
         ]);
         return { books, total };

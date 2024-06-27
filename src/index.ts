@@ -135,17 +135,11 @@ ipcMain.handle('add-book', async (event, book: IBook): Promise<IBook | null> => 
 ipcMain.handle('get-latest-books', async (event, page = 1, pageSize = 10) => {
   try {
     // 查询书籍
-    const books = await Book
-      .find()
-      .sort({ createdAt: -1 })
-      .skip((page - 1) * pageSize)
-      .limit(pageSize);
-
-    const total = await Book.countDocuments();
+    const { books, total } = await bookRepository.findAll(page, pageSize);
 
     return {
       success: true,
-      data: books.map(DtoUtils.toTransferable),
+      data: books,
       total,
       currentPage: page,
       pageSize,
@@ -165,6 +159,16 @@ ipcMain.handle('get-book-cover', async (event, coverIamgePath: string) => {
     return null;
   }
 
+});
+
+ipcMain.handle('get-book-files', async (event, bookId: string) => {
+  try {
+    const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);
+    return bookFiles.map(DtoUtils.toTransferable);
+  } catch (error) {
+    console.error('Error fetching book files:', error);
+    return [];
+  }
 });
 
 // // 删除书籍文件

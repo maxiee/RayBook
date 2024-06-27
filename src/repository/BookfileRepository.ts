@@ -29,14 +29,18 @@ export class BookFileRepostory {
             Body: fs.createReadStream(filePath)
         }).promise();
 
-        return newBookFile;
+        return newBookFile.toObject();
     }
 
     async findBookFileById(bookFileId: string): Promise<IBookFile | null> {
-        return await BookFile.findById(bookFileId)
+        return await BookFile.findById(bookFileId).lean();
     }
 
     async findBookFileByObjectName(objectName: string): Promise<IBookFile | null> {
-        return await BookFile.findOne({ objectName });
+        return await BookFile.findOne({ objectName }).lean();
+    }
+
+    async findBookFilesByBookId(bookId: string): Promise<IBookFile[]> {
+        return await BookFile.find({ book: new SchemaTypes.ObjectId(bookId) }).lean();
     }
 }

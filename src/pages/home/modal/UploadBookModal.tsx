@@ -11,6 +11,8 @@ const UploadBookModal: React.FC<{
     bookId: string | null;
 }> = ({ open, onClose, bookId }) => {
     const [form] = Form.useForm();
+    const [book, setBook] = useState<IBook | null>(null);
+    const [coverImage, setCoverImage] = useState<Buffer | null>(null);
     const [coverBase64, setCoverBase64] = useState<string | null>(null);
     const [coverMimeType, setCoverMimeType] = useState<string | null>(null);
     const [bookFiles, setBookFiles] = useState<IBookFile[]>([]);
@@ -29,16 +31,24 @@ const UploadBookModal: React.FC<{
 
     const fetchBookDetails = async (id: string) => {
         try {
-            const result = await ipcRenderer.invoke('get-book-details', id);
-            if (result.success) {
-                const book: IBook = result.book;
-                form.setFieldsValue(book);
-                setCoverBase64(book.coverImage?.data || null);
-                setCoverMimeType(book.coverImage?.contentType || null);
-                setBookFiles(book.files);
-            } else {
+            // 获取并设置书籍详情
+            const _book: IBook | null = await ipcRenderer.invoke('get-book-details', id);
+            if (!_book) {
                 message.error('获取书籍详情失败');
+                return;
             }
+            setBook(_book);
+            form.setFieldsValue(_book);
+
+            // 获取封面图片
+            if (_book.coverImagePath) {
+                const coverImage = await ipcRenderer.invoke('get-book-cover', _book.coverImagePath);
+                if (coverImage) setCoverImage(coverImage);
+            }
+
+            // 获取书籍文件
+            const _bookFiles = await ipcRenderer.invoke('get-book-files', id);
+            if (_bookFiles) setBookFiles(_bookFiles);
         } catch (error) {
             console.error('Error fetching book details:', error);
             message.error('获取书籍详情时出错');

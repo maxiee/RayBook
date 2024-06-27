@@ -1,4 +1,4 @@
-import { Schema } from 'mongoose';
+import { Document, Schema } from 'mongoose';
 import { IBook } from '../models/Book';
 import { IBookFile } from '../models/BookFile';
 

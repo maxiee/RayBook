@@ -3,7 +3,7 @@ import { Layout, Typography, Row, Col, Card, Button, Pagination } from 'antd';
 import { BookOutlined, UploadOutlined } from '@ant-design/icons';
 import UploadBookModal from './modal/UploadBookModal';
 import BookCard from './components/BookCard';
-import { IBook } from '../../types/Book';
+import { IBook } from '../../models/Book';
 
 const { ipcRenderer } = window.require('electron');
 
@@ -21,6 +21,7 @@ const HomePage: React.FC = () => {
 
     const fetchLatestBooks = async (page: number) => {
         const result = await ipcRenderer.invoke('get-latest-books', page, pageSize);
+        console.log("fetchLatestBooks result: ", result);
         if (result.success) {
             setBooks(result.data);
             setTotalBooks(result.total);
@@ -77,9 +78,9 @@ const HomePage: React.FC = () => {
                         console.log(book);
                         console.log(book.title);
                         return (
-                            <Col key={book._id} xs={24} sm={12} md={8} lg={6} xl={4}>
+                            <Col key={book._id as string} xs={24} sm={12} md={8} lg={6} xl={4}>
                                 <BookCard book={book} onEdit={() => {
-                                    handleUploadClickEdit(book._id);
+                                    handleUploadClickEdit(book._id as string);
                                 }} />
                             </Col>
                         );
