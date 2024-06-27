@@ -18,31 +18,31 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
         if (result.success) {
             setCoverImage(result.data);
         }
-    }
-    
+    };
+
     useEffect(() => {
         getCoverImage(book._id as string);
     }, [book.coverImagePath]);
 
     const items: MenuProps['items'] = [
         {
-          key: 'edit',
-          label: (
-            <a onClick={() => onEdit(book._id as string)}>
-              <EditOutlined/>
-              编辑
-            </a>
-          ),
+            key: 'edit',
+            label: (
+                <a onClick={() => onEdit(book._id as string)}>
+                    <EditOutlined />
+                    编辑
+                </a>
+            ),
         },
-      ];
+    ];
 
     return (
         <Card size="small"
             hoverable
-            cover={book.coverImage && book.coverImage.data ? (
+            cover={coverImage ? (
                 <img
                     alt={book.title || 'Book cover'}
-                    src={`data:${book.coverImage.contentType};base64,${book.coverImage.data}`}
+                    src={`data:image/${book.coverImagePath.split('.').pop()};base64,${coverImage.toString('base64')}`}
                     style={{ height: 300, objectFit: 'cover' }}
                 />
             ) : (
@@ -51,7 +51,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
                 </div>
             )}
             actions={[
-                <Dropdown menu={{items}} placement="bottomRight">
+                <Dropdown menu={{ items }} placement="bottomRight">
                     <MoreOutlined key="more" />
                 </Dropdown>,
             ]}

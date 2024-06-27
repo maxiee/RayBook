@@ -3,6 +3,7 @@ import { Modal, Form, Input, Upload, Button, InputNumber, Image, Row, Col, messa
 import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
 import { ipcRenderer } from 'electron';
 import { IBookFile } from '../../../models/BookFile';
+import { IBook } from '../../../models/Book';
 
 const UploadBookModal: React.FC<{
     open: boolean;
