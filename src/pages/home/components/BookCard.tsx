@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { Card, Menu, Dropdown, MenuProps } from 'antd';
-import { MoreOutlined, EditOutlined } from '@ant-design/icons';
+import { MoreOutlined, EditOutlined, ReadOutlined } from '@ant-design/icons';
 import { IBook } from '../../../models/Book';
 const { ipcRenderer } = window.require('electron');
+import { useNavigate } from 'react-router-dom';
+import { serializeId } from '../../../utils/DtoUtils';
 
 interface BookCardProps {
     book: IBook;
@@ -10,6 +12,8 @@ interface BookCardProps {
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
+    const navigate = useNavigate();
+
     const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
     // 获取图书封面
@@ -31,6 +35,19 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
                 <a onClick={() => onEdit(book._id)}>
                     <EditOutlined />
                     编辑
+                </a>
+            ),
+        },
+        {
+            key: 'read',
+            label: (
+                <a onClick={() => {
+                    console.log(book._id)
+                    const serializedId = serializeId(book._id);
+                    navigate(`/read/${serializedId}`);
+                }}>
+                    <ReadOutlined />
+                    阅读
                 </a>
             ),
         },

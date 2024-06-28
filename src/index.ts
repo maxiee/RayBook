@@ -41,15 +41,15 @@ const createWindow = (): void => {
       csp = [
         "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; " +
         "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-        `img-src 'self' data: ${minioEndpoint};` +
-        `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:*;`
+        `img-src 'self' data: ${minioEndpoint} file:;` +
+        `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:* file:;`
       ];
     } else {
       // 生产环境的 CSP
       csp = [
         "default-src 'self' 'unsafe-inline' data:; " +
-        `img-src 'self' data: ${minioEndpoint}; ` +
-        `connect-src 'self' ${minioEndpoint};`
+        `img-src 'self' data: ${minioEndpoint} file:; ` +
+        `connect-src 'self' ${minioEndpoint} file:;`
       ];
     }
 
@@ -63,6 +63,11 @@ const createWindow = (): void => {
 
   // and load the index.html of the app.
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
+
+  mainWindow.webContents.on('will-navigate', (event, url) => {
+    event.preventDefault()
+    mainWindow.loadURL(url)
+  })
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -214,6 +219,19 @@ ipcMain.handle('extract-cover', async (event, bookId: Id, fileId: Id) => {
   } catch (error) {
     console.error('提取封面时出错:', error);
     return { success: false, message: '提取封面失败' };
+  }
+});
+
+ipcMain.handle('get-local-book-path', async (event, bookId: Id) => {
+  try {
+    const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);
+   
+    const localPath = await localBookCache.getBookFile(bookId, bookFiles[0].path);
+    
+    return { success: true, path: localPath };
+  } catch (error) {
+    console.error('Error getting local book path:', error);
+    return { success: false, message: 'Failed to get local book path' };
   }
 });
 
