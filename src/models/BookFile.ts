@@ -1,12 +1,12 @@
 import mongoose, { Schema, Document } from 'mongoose';
 
 export interface IBookFile extends Document {
-  _id: Schema.Types.ObjectId | string;
+  _id: Id;
   filename: string;
   format: string;
   path: string;
   size: number;
-  book: Schema.Types.ObjectId | string;
+  book: Id;
 }
 
 const BookFileSchema: Schema = new Schema({

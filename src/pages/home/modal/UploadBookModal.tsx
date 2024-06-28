@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, Form, Input, Upload, Button, InputNumber, Image, Row, Col, message, Table } from 'antd';
-import { UploadOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Modal, Form, message, Tabs } from 'antd';
 import { ipcRenderer } from 'electron';
 import { IBookFile } from '../../../models/BookFile';
 import { IBook } from '../../../models/Book';
+import BookMetadataForm from './components/BookMetadataForm';
+import BookFilesManager from './components/BookFilesManager';
+
+const { TabPane } = Tabs;
 
 const UploadBookModal: React.FC<{
     open: boolean;
@@ -17,9 +20,9 @@ const UploadBookModal: React.FC<{
     const [coverMimeType, setCoverMimeType] = useState<string | null>(null);
     const [bookFiles, setBookFiles] = useState<IBookFile[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
+    const [activeTab, setActiveTab] = useState('1');
 
     useEffect(() => {
-        console.log("UploadBookModal Effect bookId: ", bookId);
         if (bookId) {
             setIsEditMode(true);
             fetchBookDetails(bookId);
@@ -31,7 +34,6 @@ const UploadBookModal: React.FC<{
 
     const fetchBookDetails = async (id: Id) => {
         try {
-            // 获取并设置书籍详情
             const _book: IBook | null = await ipcRenderer.invoke('get-book-details', id);
             if (!_book) {
                 message.error('获取书籍详情失败');
@@ -40,13 +42,11 @@ const UploadBookModal: React.FC<{
             setBook(_book);
             form.setFieldsValue(_book);
 
-            // 获取封面图片
             if (_book.coverImagePath) {
                 const coverImage = await ipcRenderer.invoke('get-book-cover', _book.coverImagePath);
                 if (coverImage) setCoverImage(coverImage);
             }
 
-            // 获取书籍文件
             const _bookFiles = await ipcRenderer.invoke('get-book-files', id);
             if (_bookFiles) setBookFiles(_bookFiles);
         } catch (error) {
@@ -62,17 +62,18 @@ const UploadBookModal: React.FC<{
         setBookFiles([]);
     };
 
-    // 添加电子书元信息
-    const handleSubmit = async (values: any) => {
+    const handleMetadataSubmit = async () => {
         try {
+            const values = await form.validateFields();
             const bookData: Partial<IBook> = {
                 ...values,
-                coverImage: coverBase64 ? {
-                    data: coverBase64,
-                    contentType: coverMimeType || ''
-                } : undefined,
-                files: bookFiles.map(file => file._id),
-                _id: isEditMode ? bookId : undefined
+                coverImage: coverBase64
+                    ? {
+                        data: coverBase64,
+                        contentType: coverMimeType || '',
+                    }
+                    : undefined,
+                _id: isEditMode ? bookId : undefined,
             };
             const result = await ipcRenderer.invoke(isEditMode ? 'update-book' : 'add-book', bookData);
             if (result.success) {
@@ -87,15 +88,12 @@ const UploadBookModal: React.FC<{
         }
     };
 
-    // 上传电子书文件
     const handleFileUpload = async () => {
         try {
             const result = await ipcRenderer.invoke('upload-book-file', bookId || '');
             if (result.success) {
-                // 检查文件是否已存在
-                const fileExists = bookFiles.some(file => file.path === result.file.path);
+                const fileExists = bookFiles.some((file) => file.path === result.file.path);
                 if (!fileExists) {
-                    console.log("handleFileUpload result.file: ", result.file);
                     setBookFiles([...bookFiles, result.file]);
                     message.success('成功添加电子书文件');
                 } else {
@@ -110,18 +108,18 @@ const UploadBookModal: React.FC<{
         }
     };
 
-    const handleFileDelete = async (fileId: string) => {
+    const handleFileDelete = async (fileId: Id) => {
         try {
             if (isEditMode) {
                 const result = await ipcRenderer.invoke('delete-book-file', fileId);
                 if (result.success) {
-                    setBookFiles(bookFiles.filter(file => file._id !== fileId));
+                    setBookFiles(bookFiles.filter((file) => file._id.buffer !== fileId.buffer));
                     message.success('成功删除文件');
                 } else {
                     message.error('删除文件失败');
                 }
             } else {
-                setBookFiles(bookFiles.filter(file => file._id !== fileId));
+                setBookFiles(bookFiles.filter((file) => file._id.buffer !== fileId.buffer));
             }
         } catch (error) {
             console.error('删除文件时出错:', error);
@@ -129,118 +127,50 @@ const UploadBookModal: React.FC<{
         }
     };
 
-    const columns = [
-        { title: '文件名', dataIndex: 'filename', key: 'filename' },
-        { title: '格式', dataIndex: 'format', key: 'format' },
-        { title: '大小', dataIndex: 'size', key: 'size' },
-        {
-            title: '操作',
-            key: 'action',
-            render: (text: any, record: any, index: number) => (
-                <Button icon={<DeleteOutlined />} onClick={() => handleFileDelete(record._id)}>删除</Button>
-            ),
-        },
-    ];
+    const handleCoverUpload = (file: File) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            if (e.target && e.target.result) {
+                setCoverBase64(e.target.result.toString().split(',')[1]);
+                setCoverMimeType(file.type);
+            }
+        };
+        reader.readAsDataURL(file);
+    };
 
-    return <Modal
-        title={isEditMode ? "编辑图书" : "添加图书"}
-        open={open}
-        onCancel={onClose}
-        onOk={() => form.submit()}
-        okText={isEditMode ? "更新" : "上传"}
-        cancelText="取消"
-        width={800}
-    >
-        <Form form={form} layout="vertical" onFinish={handleSubmit}>
-            <Row gutter={16}>
-                <Col span={9}>
-                    <Form.Item name="title" label="书名" rules={[{ required: true, message: '请输入书名' }]}>
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={9}>
-                    <Form.Item name="subtitle" label="副标题">
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={6}>
-                    <Form.Item name="series" label="丛书">
-                        <Input />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={16}>
-                <Col span={9}>
-                    <Form.Item name="author" label="作者" rules={[{ message: '请输入作者名' }]}>
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={9}>
-                    <Form.Item name="translator" label="译者">
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={6}>
-                    <Form.Item name="originalTitle" label="原作名称">
-                        <Input />
-                    </Form.Item>
-                </Col>
+    const handleTabChange = (activeKey: string) => {
+        setActiveTab(activeKey);
+    };
 
-            </Row>
-            <Row gutter={16}>
-                <Col span={9}>
-                    <Form.Item name="publisher" label="出版社">
-                        <Input />
-                    </Form.Item>
-                </Col>
-                <Col span={9}>
-                    <Form.Item name="publicationYear" label="出版年">
-                        <InputNumber style={{ width: '100%' }} />
-                    </Form.Item>
-                </Col>
-
-                <Col span={6}>
-                    <Form.Item name="isbn" label="ISBN">
-                        <Input />
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={16}>
-                <Col span={12}>
-                    <Form.Item name="cover" label="封面图">
-                        {coverBase64 ? (
-                            <Image
-                                src={`data:${coverMimeType};base64,${coverBase64}`}
-                                alt="Book Cover"
-                                style={{ maxWidth: '100%', maxHeight: '300px' }}
-                            />
-                        ) : (
-                            <Upload>
-                                <Button icon={<UploadOutlined />}>点击上传封面</Button>
-                            </Upload>
-                        )}
-                    </Form.Item>
-                </Col>
-            </Row>
-            <Row gutter={16}>
-                <Col span={24}>
-                    <Form.Item label="电子书文件">
-                        <Button icon={<UploadOutlined />} onClick={handleFileUpload}>
-                            添加电子书文件
-                        </Button>
-                        <Table
-                            dataSource={bookFiles.map(e => {
-                                return {
-                                    ...e,
-                                    key: e._id,
-                                };
-                            })}
-                            columns={columns} />
-                    </Form.Item>
-                </Col>
-            </Row>
-        </Form>
-    </Modal>;
+    return (
+        <Modal
+            title={isEditMode ? '编辑图书' : '添加图书'}
+            open={open}
+            onCancel={onClose}
+            onOk={() => (activeTab === '1' ? handleMetadataSubmit() : onClose())}
+            okText={activeTab === '1' ? (isEditMode ? '更新' : '上传') : '完成'}
+            cancelText="取消"
+            width={800}
+        >
+            <Tabs activeKey={activeTab} onChange={handleTabChange}>
+                <TabPane tab="图书信息" key="1">
+                    <BookMetadataForm
+                        form={form}
+                        coverBase64={coverBase64}
+                        coverMimeType={coverMimeType}
+                        onCoverUpload={handleCoverUpload}
+                    />
+                </TabPane>
+                <TabPane tab="电子书文件" key="2">
+                    <BookFilesManager
+                        bookFiles={bookFiles}
+                        onFileUpload={handleFileUpload}
+                        onFileDelete={handleFileDelete}
+                    />
+                </TabPane>
+            </Tabs>
+        </Modal>
+    );
 };
 
 export default UploadBookModal;
