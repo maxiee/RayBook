@@ -1,6 +1,6 @@
 import AWS from 'aws-sdk';
 
-const minioEndpoint = process.env.MINIO_ENDPOINT;
+export const minioEndpoint = process.env.MINIO_ENDPOINT;
 const minioAccessKey = process.env.MINIO_ACCESS_KEY;
 const minioSecretKey = process.env.MINIO_SECRET_KEY;
 

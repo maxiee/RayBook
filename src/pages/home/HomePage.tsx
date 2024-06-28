@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Layout, Typography, Row, Col, Card, Button, Pagination } from 'antd';
 import { BookOutlined, UploadOutlined } from '@ant-design/icons';
-import UploadBookModal from './modal/UploadBookModal';
 import BookCard from './components/BookCard';
 import { IBook } from '../../models/Book';
+import UploadBookModal from './modal/UploadBookModal';
 
 const { ipcRenderer } = window.require('electron');
 

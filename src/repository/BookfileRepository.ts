@@ -4,6 +4,7 @@ import { BookFile, IBookFile } from '../models/BookFile';
 import { SchemaTypes } from 'mongoose';
 import s3Client from '../data/minio/MinioClient';
 import { toObjectId } from '../utils/DtoUtils';
+import {BUCKET_NAME} from '../constants';
 
 export class BookFileRepostory {
     async uploadBookFile(bookId: string, filePath: string, objectName: string): Promise<IBookFile|null> {
@@ -33,8 +34,8 @@ export class BookFileRepostory {
         return newBookFile.toObject();
     }
 
-    async findBookFileById(bookFileId: string): Promise<IBookFile | null> {
-        return await BookFile.findById(bookFileId).lean();
+    async findBookFileById(bookFileId: Id): Promise<IBookFile | null> {
+        return await BookFile.findById(toObjectId(bookFileId)).lean();
     }
 
     async findBookFileByObjectName(objectName: string): Promise<IBookFile | null> {

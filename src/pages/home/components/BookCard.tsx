@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, Menu, Dropdown, MenuProps } from 'antd';
 import { MoreOutlined, EditOutlined } from '@ant-design/icons';
 import { IBook } from '../../../models/Book';
@@ -10,13 +10,13 @@ interface BookCardProps {
 }
 
 const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
-    const [coverImage, setCoverImage] = React.useState<Buffer | null>(null);
+    const [coverUrl, setCoverUrl] = useState<string | null>(null);
 
     // 获取图书封面
     const getCoverImage = async (coverIamgePath: string) => {
         const result = await ipcRenderer.invoke('get-book-cover', coverIamgePath);
         if (result.success) {
-            setCoverImage(result.data);
+            setCoverUrl(result.coverUrl);
         }
     };
 
@@ -39,10 +39,10 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
     return (
         <Card size="small"
             hoverable
-            cover={coverImage ? (
+            cover={coverUrl ? (
                 <img
                     alt={book.title || 'Book cover'}
-                    src={`data:image/${book.coverImagePath.split('.').pop()};base64,${coverImage.toString('base64')}`}
+                    src={coverUrl}
                     style={{ height: 300, objectFit: 'cover' }}
                 />
             ) : (

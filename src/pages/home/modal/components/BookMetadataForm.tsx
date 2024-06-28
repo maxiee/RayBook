@@ -5,15 +5,13 @@ import { IBook } from '../../../../models/Book';
 
 interface BookMetadataFormProps {
   form: any;
-  coverBase64: string | null;
-  coverMimeType: string | null;
+  coverUrl: string | null;
   onCoverUpload: (file: File) => void;
 }
 
 const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
   form,
-  coverBase64,
-  coverMimeType,
+  coverUrl,
   onCoverUpload,
 }) => {
   return (
@@ -71,10 +69,10 @@ const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
       </Row>
       <Row gutter={16}>
         <Col span={12}>
-          <Form.Item name="cover" label="封面图">
-            {coverBase64 ? (
+          <Form.Item name="coverImagePath" label="封面图">
+            {coverUrl ? (
               <Image
-                src={`data:${coverMimeType};base64,${coverBase64}`}
+                src={coverUrl}
                 alt="Book Cover"
                 style={{ maxWidth: '100%', maxHeight: '300px' }}
               />

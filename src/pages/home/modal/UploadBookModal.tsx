@@ -15,9 +15,7 @@ const UploadBookModal: React.FC<{
 }> = ({ open, onClose, bookId }) => {
     const [form] = Form.useForm();
     const [book, setBook] = useState<IBook | null>(null);
-    const [coverImage, setCoverImage] = useState<Buffer | null>(null);
-    const [coverBase64, setCoverBase64] = useState<string | null>(null);
-    const [coverMimeType, setCoverMimeType] = useState<string | null>(null);
+    const [coverUrl, setCoverUrl] = useState<string | null>(null);
     const [bookFiles, setBookFiles] = useState<IBookFile[]>([]);
     const [isEditMode, setIsEditMode] = useState(false);
     const [activeTab, setActiveTab] = useState('1');
@@ -44,7 +42,7 @@ const UploadBookModal: React.FC<{
 
             if (_book.coverImagePath) {
                 const coverImage = await ipcRenderer.invoke('get-book-cover', _book.coverImagePath);
-                if (coverImage) setCoverImage(coverImage);
+                if (coverImage) setCoverUrl(coverImage.coverUrl);
             }
 
             const _bookFiles = await ipcRenderer.invoke('get-book-files', id);
@@ -57,8 +55,6 @@ const UploadBookModal: React.FC<{
 
     const resetForm = () => {
         form.resetFields();
-        setCoverBase64(null);
-        setCoverMimeType(null);
         setBookFiles([]);
     };
 
@@ -67,12 +63,12 @@ const UploadBookModal: React.FC<{
             const values = await form.validateFields();
             const bookData: Partial<IBook> = {
                 ...values,
-                coverImage: coverBase64
-                    ? {
-                        data: coverBase64,
-                        contentType: coverMimeType || '',
-                    }
-                    : undefined,
+                // coverImage: coverBase64
+                //     ? {
+                //         data: coverBase64,
+                //         contentType: coverMimeType || '',
+                //     }
+                //     : undefined,
                 _id: isEditMode ? bookId : undefined,
             };
             const result = await ipcRenderer.invoke(isEditMode ? 'update-book' : 'add-book', bookData);
@@ -128,14 +124,36 @@ const UploadBookModal: React.FC<{
     };
 
     const handleCoverUpload = (file: File) => {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            if (e.target && e.target.result) {
-                setCoverBase64(e.target.result.toString().split(',')[1]);
-                setCoverMimeType(file.type);
+        // const reader = new FileReader();
+        // reader.onload = (e) => {
+        //     if (e.target && e.target.result) {
+        //         setCoverBase64(e.target.result.toString().split(',')[1]);
+        //         setCoverMimeType(file.type);
+        //     }
+        // };
+        // reader.readAsDataURL(file);
+    };
+
+    const handleExtractCover = async (fileId: Id) => {
+        try {
+            if (!bookId) {
+                message.error('请先保存图书信息');
+                return;
             }
-        };
-        reader.readAsDataURL(file);
+            const result = await ipcRenderer.invoke('extract-cover', bookId, fileId);
+            if (result.success) {
+                message.success('成功提取封面');
+                setCoverUrl(result.coverUrl);
+                setActiveTab('1'); // Switch to the metadata tab
+                // 更新 form 中的 coverImagePath
+                form.setFieldsValue({ coverImagePath: result.coverUrl });
+            } else {
+                message.error('提取封面失败');
+            }
+        } catch (error) {
+            console.error('提取封面时出错:', error);
+            message.error('提取封面失败');
+        }
     };
 
     const handleTabChange = (activeKey: string) => {
@@ -156,8 +174,7 @@ const UploadBookModal: React.FC<{
                 <TabPane tab="图书信息" key="1">
                     <BookMetadataForm
                         form={form}
-                        coverBase64={coverBase64}
-                        coverMimeType={coverMimeType}
+                        coverUrl={coverUrl}
                         onCoverUpload={handleCoverUpload}
                     />
                 </TabPane>
@@ -166,6 +183,7 @@ const UploadBookModal: React.FC<{
                         bookFiles={bookFiles}
                         onFileUpload={handleFileUpload}
                         onFileDelete={handleFileDelete}
+                        onExtractCover={handleExtractCover}
                     />
                 </TabPane>
             </Tabs>

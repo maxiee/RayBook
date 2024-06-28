@@ -1,1 +1,1 @@
-const BUCKET_NAME = 'raybook';
+export const BUCKET_NAME = 'raybook';
