@@ -18,7 +18,7 @@ export class BookRepository {
         return { books, total };
     }
 
-    async createNewBook(book: IBook): Promise<IBook> {
+    async createNewBook(book: Partial<IBook>): Promise<IBook> {
         return await Book.create(book);
     }
 

@@ -1,13 +1,20 @@
 import fs from 'fs';
 import path from 'path';
 import { BookFile, IBookFile } from '../models/BookFile';
-import { SchemaTypes } from 'mongoose';
 import s3Client from '../data/minio/MinioClient';
 import { toObjectId } from '../utils/DtoUtils';
 import {BUCKET_NAME} from '../constants';
 
 export class BookFileRepostory {
-    async uploadBookFile(bookId: string, filePath: string, objectName: string): Promise<IBookFile|null> {
+    /**
+     * Uploads a book file to the server and saves its metadata in the database.
+     * @param bookId - The ID of the book associated with the file.
+     * @param filePath - The path to the file on the local filesystem.
+     * @param filename - The name of the file.
+     * @param objectName - The name of the object to be stored in the server.
+     * @returns A Promise that resolves to the newly created book file object, or null if the file already exists.
+     */
+    async uploadBookFile(bookId: Id, filePath: string, filename: string, objectName: string): Promise<IBookFile|null> {
         const fileStats = fs.statSync(filePath);
         const fileExtension = path.extname(filePath).slice(1);
 
@@ -18,10 +25,11 @@ export class BookFileRepostory {
         }
         
         const newBookFile = new BookFile({
-            objectName,
+            filename: filename,
             format: fileExtension,
+            path: objectName,
             size: fileStats.size,
-            book: new SchemaTypes.ObjectId(bookId)
+            book: toObjectId(bookId)
         });
         await newBookFile.save();
 

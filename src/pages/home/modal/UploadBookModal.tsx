@@ -5,6 +5,7 @@ import { IBookFile } from '../../../models/BookFile';
 import { IBook } from '../../../models/Book';
 import BookMetadataForm from './components/BookMetadataForm';
 import BookFilesManager from './components/BookFilesManager';
+import { IMetadata } from 'epub2/lib/epub/const';
 
 const { TabPane } = Tabs;
 

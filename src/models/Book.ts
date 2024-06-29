@@ -24,7 +24,7 @@ const BookSchema: Schema = new Schema({
   publisher: String,
   publicationYear: Number,
   isbn: String,
-  coverImagePath: String,
+  coverImagePath: { type: String, required: false},
 });
 
 export default mongoose.model<IBook>('Book', BookSchema);

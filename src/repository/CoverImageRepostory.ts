@@ -77,10 +77,6 @@ export class CoverIamgeRepostory {
         await Book.findByIdAndUpdate(
             toObjectId(bookId), 
             { coverImagePath: coverObjectName });
-        
-        // 删除临时文件
-        fs.unlinkSync(filepath);
-
 
         // 获取 MinIO 中文件的 URL
         const coverUrl = await s3Client.getSignedUrlPromise('getObject', {
