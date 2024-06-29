@@ -3,22 +3,23 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { Button, message } from 'antd';
 import { ArrowLeftOutlined } from '@ant-design/icons';
 import { deserializeId } from '../../utils/DtoUtils';
-import {ReactReader, EpubView} from 'react-reader';
+import { ReactReader, EpubView } from 'react-reader';
 const { ipcRenderer } = window.require('electron');
 
 const ReaderPage: React.FC = () => {
-  const [epubPath, setEpubPath] = useState<string | null>(null);
+  const [epubData, setEpubData] = useState<ArrayBuffer | null>(null);
   const [location, setLocation] = useState<string | number>(0);
   const { bookId } = useParams<{ bookId: string; }>();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookFile = async () => {
+      console.log('Fetching book file');
       try {
         const id = deserializeId(bookId);
-        const result = await ipcRenderer.invoke('get-local-book-path', id);
-                if (result.success) {
-          setEpubPath(result.path);
+        const result = await ipcRenderer.invoke('get-local-book-content', id);
+        if (result.success) {
+          setEpubData(result.content);
         } else {
           message.error('Failed to load the book');
         }
@@ -47,10 +48,10 @@ const ReaderPage: React.FC = () => {
       >
         Back to Library
       </Button>
-      {epubPath ? (
+      {epubData ? (
         <div style={{ flex: 1 }}>
           <ReactReader
-            url={`file://${epubPath}`}
+            url={epubData}
             location={location}
             locationChanged={handleLocationChanged}
           />

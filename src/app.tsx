@@ -8,6 +8,7 @@ const App: React.FC = () => {
   return (
     <Router>
       <Routes>
+      <Route path="/" element={<HomePage />} />
         <Route path="/main_window" element={<HomePage />} />
         <Route path="/read/:bookId" element={<ReaderPage />} />
       </Routes>
@@ -20,9 +21,7 @@ function render() {
     document.getElementById("root") as HTMLElement
   );
   root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
+    <App />
   );
 }
 

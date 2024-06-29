@@ -226,16 +226,21 @@ ipcMain.handle('extract-cover', async (event, bookId: Id, fileId: Id) => {
   }
 });
 
-ipcMain.handle('get-local-book-path', async (event, bookId: Id) => {
+ipcMain.handle('get-local-book-content', async (event, bookId: Id) => {
   try {
     const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);
+    if (bookFiles.length === 0) {
+      return { success: false, message: 'No book file found' };
+    }
 
-    const localPath = await localBookCache.getBookFile(bookId, bookFiles[0].path);
+    const filePath = await localBookCache.getBookFile(bookId, bookFiles[0].path);
+    const content = fs.readFileSync(filePath);
+    console.log('get-local-book-content ', content.buffer.byteLength)
 
-    return { success: true, path: localPath };
+    return { success: true, content: content.buffer };
   } catch (error) {
     console.error('Error getting local book path:', error);
-    return { success: false, message: 'Failed to get local book path' };
+    return { success: false, message: 'Failed to get local book content' };
   }
 });
 
