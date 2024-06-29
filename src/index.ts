@@ -39,18 +39,22 @@ const createWindow = (): void => {
     if (process.env.NODE_ENV === 'development') {
       // 开发环境的 CSP
       csp = [
-        "default-src 'self' 'unsafe-inline' 'unsafe-eval' data:; " +
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'; " +
-        `img-src 'self' data: ${minioEndpoint} file:;` +
-        `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:* file:;`
-      ];
+        "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: file:;",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+        `img-src 'self' data: ${minioEndpoint} blob: file:;`,
+        "style-src 'self' 'unsafe-inline' blob:;",
+        "font-src 'self' data: file:;",
+        `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:* file: blob:;`
+      ].join(' ');
     } else {
       // 生产环境的 CSP
       csp = [
-        "default-src 'self' 'unsafe-inline' data:; " +
-        `img-src 'self' data: ${minioEndpoint} file:; ` +
-        `connect-src 'self' ${minioEndpoint} file:;`
-      ];
+        "default-src 'self' 'unsafe-inline' data: blob: file:;",
+        `img-src 'self' data: ${minioEndpoint} file:;`,
+        "style-src 'self' 'unsafe-inline' blob:;",
+        "font-src 'self' data: file:;",
+        `connect-src 'self' ${minioEndpoint} file: blob:;`
+      ].join(' ');
     }
 
     callback({
@@ -65,9 +69,9 @@ const createWindow = (): void => {
   mainWindow.loadURL(MAIN_WINDOW_WEBPACK_ENTRY);
 
   mainWindow.webContents.on('will-navigate', (event, url) => {
-    event.preventDefault()
-    mainWindow.loadURL(url)
-  })
+    event.preventDefault();
+    mainWindow.loadURL(url);
+  });
 
   // Open the DevTools.
   mainWindow.webContents.openDevTools();
@@ -225,9 +229,9 @@ ipcMain.handle('extract-cover', async (event, bookId: Id, fileId: Id) => {
 ipcMain.handle('get-local-book-path', async (event, bookId: Id) => {
   try {
     const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);
-   
+
     const localPath = await localBookCache.getBookFile(bookId, bookFiles[0].path);
-    
+
     return { success: true, path: localPath };
   } catch (error) {
     console.error('Error getting local book path:', error);

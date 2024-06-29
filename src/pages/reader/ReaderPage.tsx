@@ -17,7 +17,7 @@ const ReaderPage: React.FC = () => {
       try {
         const id = deserializeId(bookId);
         const result = await ipcRenderer.invoke('get-local-book-path', id);
-        if (result.success) {
+                if (result.success) {
           setEpubPath(result.path);
         } else {
           message.error('Failed to load the book');
