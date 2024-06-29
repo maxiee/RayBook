@@ -1,9 +1,7 @@
 import EPub from "epub2";
 import s3Client from "../data/minio/MinioClient";
-import path from "path";
 import { toObjectId } from "../utils/DtoUtils";
 import Book from "../models/Book";
-import fs from "fs";
 import { BUCKET_NAME } from "../constants";
 
 export class CoverIamgeRepostory {
@@ -12,12 +10,12 @@ export class CoverIamgeRepostory {
     /**
      * Constructs the cover image filename for a book.
      * @param bookId - The ID of the book.
-     * @param originalFilename - The original filename of the cover image.
+     * @param mimeType - The MIME type of the cover image.
      * @returns The constructed cover image filename.
      */
-    static constructCoverImageFilename(bookIdString: string, originalFilename: string): string {
-        const originalExtension = path.extname(originalFilename);
-        return `${CoverIamgeRepostory.collectionPath}/${bookIdString}${originalExtension}`;
+    static constructCoverImageFilename(bookIdString: string, mimeType: string): string {
+        const originalExtension = mimeType.split('/')[1];
+        return `${CoverIamgeRepostory.collectionPath}/${bookIdString}.${originalExtension}`;
     }
 
     async findCoverImageByPath(path: string) {
@@ -50,6 +48,7 @@ export class CoverIamgeRepostory {
     async uploadBookCoverImage(bookId: Id, filepath: string) {
         const epub: EPub = await EPub.createAsync(filepath);
         const coverPath = epub.metadata.cover;
+        console.log('coverPath:', coverPath);
 
         if (!coverPath) return { success: false, message: '未找到封面' };
 
@@ -62,8 +61,8 @@ export class CoverIamgeRepostory {
 
         const coverObjectName = CoverIamgeRepostory.constructCoverImageFilename(
             toObjectId(bookId).toHexString(),
-            coverPath);
-
+            coverData.mimeType);
+        console.log('coverObjectName:', coverObjectName);
         
         await s3Client.putObject({
             Bucket: BUCKET_NAME,
