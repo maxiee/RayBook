@@ -4,6 +4,24 @@ import { IBookService } from "./BookServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 
 class BookService implements IBookService {
+  async addBook(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
+    try {
+      const newBook = await bookRepository.createNewBook(book);
+      return {
+        success: true,
+        message: "Successfully added book",
+        payload: newBook,
+      };
+    } catch (error) {
+      console.error("Failed to add book", error);
+      return {
+        success: false,
+        message: "Failed to add book",
+        payload: null,
+      };
+    }
+  }
+
   async updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
     try {
       const bookUpdated = await bookRepository.updateBook(book);

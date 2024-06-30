@@ -22,39 +22,16 @@ class BookRepository {
   }
 
   async createNewBook(book: Partial<IBook>): Promise<IBook> {
-    return await Book.create(book);
+    return (await Book.create(book)).toObject();
   }
 
   async updateBook(book: Partial<IBook>): Promise<IBook | null> {
-    return await Book.findByIdAndUpdate(book._id, book, { new: true });
+    return await Book.findByIdAndUpdate(book._id, book, { new: true }).lean();
   }
 
   async delete(id: string): Promise<boolean> {
     const result = await Book.findByIdAndDelete(id);
     return !!result;
-  }
-
-  async addBookFile(
-    bookId: string,
-    file: Partial<IBookFile>
-  ): Promise<IBookFile> {
-    const newFile = await BookFile.create({
-      ...file,
-      book: new SchemaTypes.ObjectId(bookId),
-    });
-    await Book.findByIdAndUpdate(bookId, { $push: { files: newFile._id } });
-    return newFile;
-  }
-
-  async removeBookFile(bookId: string, fileId: string): Promise<boolean> {
-    const result = await BookFile.findByIdAndDelete(fileId);
-    if (result) {
-      await Book.findByIdAndUpdate(bookId, {
-        $pull: { files: new SchemaTypes.ObjectId(fileId) },
-      });
-      return true;
-    }
-    return false;
   }
 }
 

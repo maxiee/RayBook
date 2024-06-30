@@ -112,20 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-// 处理图书添加
-ipcMain.handle(
-  "add-book",
-  async (event, book: IBook): Promise<IBook | null> => {
-    try {
-      const newBook = await bookRepository.createNewBook(book);
-      return newBook;
-    } catch (error) {
-      console.error("添加图书时出错:", error);
-      return null;
-    }
-  }
-);
-
 ipcMain.handle("add-new-book", async (event) => {
   const result = await dialog.showOpenDialog({
     properties: ["openFile"],
@@ -146,13 +132,14 @@ ipcMain.handle("add-new-book", async (event) => {
   const metadata = await epubMetadaService.extractMetadata(filePath);
   console.log("add-new-book metadata:", metadata);
 
-  const newBook = await bookRepository.createNewBook({
+  const newBook = await bookService.addBook({
     title: metadata.title,
     author: metadata.creator,
     publisher: metadata.publisher,
     isbn: metadata.ISBN,
     publicationYear: new Date(metadata.date).getFullYear(),
   });
+
   console.log("add-new-book newBook:", newBook);
 
   const newUploadBookFile = await bookfileRepository.uploadBookFile(
