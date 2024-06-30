@@ -4,13 +4,12 @@ import { BookOutlined, UploadOutlined } from '@ant-design/icons';
 import BookCard from './components/BookCard';
 import { IBook } from '../../models/Book';
 import UploadBookModal from './modal/UploadBookModal';
-import { IMetadata } from 'epub2/lib/epub/const';
+import { bookServiceRender } from '../../app';
 
 const { ipcRenderer } = window.require('electron');
 
 const { Header, Content } = Layout;
 const { Title } = Typography;
-const { Meta } = Card;
 
 const HomePage: React.FC = () => {
     const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
@@ -21,12 +20,12 @@ const HomePage: React.FC = () => {
     const pageSize = 10;
 
     const fetchLatestBooks = async (page: number) => {
-        const result = await ipcRenderer.invoke('get-latest-books', page, pageSize);
+        const result = await bookServiceRender.getLatestBooks(page, pageSize);
         console.log("fetchLatestBooks result: ", result);
         if (result.success) {
-            setBooks(result.data);
-            setTotalBooks(result.total);
-            setCurrentPage(result.currentPage);
+            setBooks(result.payload.books);
+            setTotalBooks(result.payload.total);
+            setCurrentPage(page);
         } else {
             console.error('Failed to fetch latest books:', result.message);
         }
