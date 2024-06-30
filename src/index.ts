@@ -112,15 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-ipcMain.handle("get-book-files", async (event, bookId: Id) => {
-  try {
-    return await bookfileRepository.findBookFilesByBookId(bookId);
-  } catch (error) {
-    console.error("Error fetching book files:", error);
-    return [];
-  }
-});
-
 ipcMain.handle("extract-cover", async (event, bookId: Id, fileId: Id) => {
   try {
     const bookFile = await bookfileRepository.findBookFileById(fileId);

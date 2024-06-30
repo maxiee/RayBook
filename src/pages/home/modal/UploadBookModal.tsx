@@ -54,8 +54,8 @@ const UploadBookModal: React.FC<{
         }
       }
 
-      const _bookFiles = await ipcRenderer.invoke("get-book-files", id);
-      if (_bookFiles) setBookFiles(_bookFiles);
+      const _bookFilesResult = await bookFileServiceRender.getBookFiles(id);
+      if (_bookFilesResult.success) setBookFiles(_bookFilesResult.payload);
     } catch (error) {
       console.error("Error fetching book details:", error);
       message.error("获取书籍详情时出错");
