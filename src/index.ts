@@ -112,23 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-ipcMain.handle("extract-cover", async (event, bookId: Id, fileId: Id) => {
-  try {
-    const bookFile = await bookfileRepository.findBookFileById(fileId);
-    if (!bookFile) {
-      return { success: false, message: "文件不存在" };
-    }
-
-    // 使用本地缓存模块获取文件
-    const filePath = await localBookCache.getBookFile(bookId, bookFile.path);
-
-    return await coverImageRepository.uploadBookCoverImage(bookId, filePath);
-  } catch (error) {
-    console.error("提取封面时出错:", error);
-    return { success: false, message: "提取封面失败" };
-  }
-});
-
 ipcMain.handle("get-local-book-content", async (event, bookId: Id) => {
   try {
     const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);

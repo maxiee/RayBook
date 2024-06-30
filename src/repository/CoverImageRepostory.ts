@@ -42,12 +42,15 @@ class CoverIamgeRepostory {
    * @param {string} filepath - The file path of the cover image.
    * @returns {Promise<boolean>} - 上传到 MinIO 的封面的 URL。
    */
-  async uploadBookCoverImage(bookId: Id, filepath: string) {
+  async uploadBookCoverImage(
+    bookId: Id,
+    filepath: string
+  ): Promise<string | null> {
     const epub: EPub = await EPub.createAsync(filepath);
     const coverPath = epub.metadata.cover;
     console.log("coverPath:", coverPath);
 
-    if (!coverPath) return { success: false, message: "未找到封面" };
+    if (!coverPath) return null;
 
     const coverData: { data: Buffer; mimeType: string } = await new Promise(
       (resolve, reject) => {
@@ -89,11 +92,7 @@ class CoverIamgeRepostory {
       Expires: 60 * 60 * 24 * 7, // URL 有效期为 7 天
     });
 
-    return {
-      success: true,
-      message: "成功提取封面",
-      coverUrl: coverUrl,
-    };
+    return coverUrl;
   }
 }
 

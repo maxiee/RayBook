@@ -158,13 +158,16 @@ const UploadBookModal: React.FC<{
         message.error("请先保存图书信息");
         return;
       }
-      const result = await ipcRenderer.invoke("extract-cover", bookId, fileId);
+      const result = await bookCoverServiceRender.extractBookCover(
+        bookId,
+        fileId
+      );
       if (result.success) {
         message.success("成功提取封面");
-        setCoverUrl(result.coverUrl);
+        setCoverUrl(result.payload);
         setActiveTab("1"); // Switch to the metadata tab
         // 更新 form 中的 coverImagePath
-        form.setFieldsValue({ coverImagePath: result.coverUrl });
+        form.setFieldsValue({ coverImagePath: result.payload });
       } else {
         message.error("提取封面失败");
       }
