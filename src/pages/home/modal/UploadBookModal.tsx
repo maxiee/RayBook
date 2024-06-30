@@ -5,7 +5,7 @@ import { IBookFile } from '../../../models/BookFile';
 import { IBook } from '../../../models/Book';
 import BookMetadataForm from './components/BookMetadataForm';
 import BookFilesManager from './components/BookFilesManager';
-import { IMetadata } from 'epub2/lib/epub/const';
+import { bookFileServiceRender, bookServiceRender } from '../../../app';
 
 const { TabPane } = Tabs;
 
@@ -33,16 +33,16 @@ const UploadBookModal: React.FC<{
 
     const fetchBookDetails = async (id: Id) => {
         try {
-            const _book: IBook | null = await ipcRenderer.invoke('get-book-details', id);
-            if (!_book) {
+            const _book = await bookServiceRender.findBookById(id);
+            if (!_book.success || !_book.payload) {
                 message.error('获取书籍详情失败');
                 return;
             }
-            setBook(_book);
-            form.setFieldsValue(_book);
+            setBook(_book.payload);
+            form.setFieldsValue(_book.payload);
 
-            if (_book.coverImagePath) {
-                const coverImage = await ipcRenderer.invoke('get-book-cover', _book.coverImagePath);
+            if (_book.payload.coverImagePath) {
+                const coverImage = await ipcRenderer.invoke('get-book-cover', _book.payload.coverImagePath);
                 if (coverImage) setCoverUrl(coverImage.coverUrl);
             }
 
@@ -87,11 +87,11 @@ const UploadBookModal: React.FC<{
 
     const handleFileUpload = async () => {
         try {
-            const result = await ipcRenderer.invoke('upload-book-file', bookId || '');
-            if (result.success) {
-                const fileExists = bookFiles.some((file) => file.path === result.file.path);
+            const result = await bookFileServiceRender.uploadBookFile(bookId);
+            if (result.success && result.payload) {
+                const fileExists = bookFiles.some((file) => file.path === result.payload.path);
                 if (!fileExists) {
-                    setBookFiles([...bookFiles, result.file]);
+                    setBookFiles([...bookFiles, result.payload]);
                     message.success('成功添加电子书文件');
                 } else {
                     message.warning('该文件已存在，请勿重复添加');

@@ -5,7 +5,7 @@ import s3Client from '../data/minio/MinioClient';
 import { toObjectId } from '../utils/DtoUtils';
 import {BUCKET_NAME} from '../constants';
 
-export class BookFileRepostory {
+class BookFileRepostory {
     /**
      * Uploads a book file to the server and saves its metadata in the database.
      * @param bookId - The ID of the book associated with the file.
@@ -54,3 +54,5 @@ export class BookFileRepostory {
         return await BookFile.find({ book: toObjectId(bookId) }).lean();
     }
 }
+
+export const bookFileRepository = new BookFileRepostory();

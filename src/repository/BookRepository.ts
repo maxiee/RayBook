@@ -3,7 +3,7 @@ import Book, { IBook } from "../models/Book";
 import { SchemaTypes } from "mongoose";
 import { toObjectId } from "../utils/DtoUtils";
 
-export class BookRepository {
+class BookRepository {
     async findBookById(id: Id): Promise<IBook | null> {
         console.log("BookRepository findBookById id: ", id);
         return await Book.findById(toObjectId(id)).lean();
@@ -46,3 +46,5 @@ export class BookRepository {
         return false;
     }
 }
+
+export const bookRepository = new BookRepository();
