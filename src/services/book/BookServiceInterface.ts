@@ -2,7 +2,7 @@ import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { IBook } from "../../models/Book";
 
 export interface IBookService {
-  addBook(book: Partial<IBook>): Promise<ApiResponse<IBook>>;
+  addBook(): Promise<ApiResponse<IBook>>;
 
   updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook | null>>;
 

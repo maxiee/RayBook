@@ -112,57 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-ipcMain.handle("add-new-book", async (event) => {
-  const result = await dialog.showOpenDialog({
-    properties: ["openFile"],
-    filters: [{ name: "Ebooks", extensions: ["epub"] }],
-  });
-
-  if (result.canceled || result.filePaths.length === 0) {
-    return { success: false, message: "No file selected" };
-  }
-
-  const filePath = result.filePaths[0];
-  const fileName = path.basename(filePath);
-  const objectName = `books/${Date.now()}_${fileName}`;
-  console.log("add-new-book filePath:", filePath);
-  console.log("add-new-book objectName:", objectName);
-  console.log("add-new-book fileName:", fileName);
-
-  const metadata = await epubMetadaService.extractMetadata(filePath);
-  console.log("add-new-book metadata:", metadata);
-
-  const newBook = await bookService.addBook({
-    title: metadata.title,
-    author: metadata.creator,
-    publisher: metadata.publisher,
-    isbn: metadata.ISBN,
-    publicationYear: new Date(metadata.date).getFullYear(),
-  });
-
-  console.log("add-new-book newBook:", newBook);
-
-  const newUploadBookFile = await bookfileRepository.uploadBookFile(
-    newBook._id,
-    filePath,
-    fileName,
-    objectName
-  );
-  console.log("add-new-book newUploadBookFile:", newUploadBookFile);
-
-  const coverIamgeUrl = await coverImageRepository.uploadBookCoverImage(
-    newBook._id,
-    filePath
-  );
-  console.log("add-new-book coverIamgeUrl:", coverIamgeUrl);
-
-  return {
-    success: true,
-    message: "Book added successfully",
-    bookId: newBook._id,
-  };
-});
-
 // // 删除书籍文件
 // ipcMain.handle('delete-book-file', async (event, fileId) => {
 //   try {
