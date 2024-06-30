@@ -112,27 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-ipcMain.handle("get-local-book-content", async (event, bookId: Id) => {
-  try {
-    const bookFiles = await bookfileRepository.findBookFilesByBookId(bookId);
-    if (bookFiles.length === 0) {
-      return { success: false, message: "No book file found" };
-    }
-
-    const filePath = await localBookCache.getBookFile(
-      bookId,
-      bookFiles[0].path
-    );
-    const content = fs.readFileSync(filePath);
-    console.log("get-local-book-content ", content.buffer.byteLength);
-
-    return { success: true, content: content.buffer };
-  } catch (error) {
-    console.error("Error getting local book path:", error);
-    return { success: false, message: "Failed to get local book content" };
-  }
-});
-
 // 更新书籍信息
 ipcMain.handle("update-book", async (event, book: IBook | null) => {
   try {

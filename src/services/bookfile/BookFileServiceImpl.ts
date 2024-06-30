@@ -5,8 +5,35 @@ import { IBookFileService } from "./BookFileServiceInterface";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { dialog } from "electron";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
+import { localBookCache } from "../LocalBookCacheService";
 
 class BookFileService implements IBookFileService {
+  async getBookFileContent(bookId: Id): Promise<ApiResponse<Buffer | null>> {
+    try {
+      const bookFiles = await bookFileRepository.findBookFilesByBookId(bookId);
+      if (bookFiles.length === 0) {
+        return { success: false, message: "No book file found", payload: null };
+      }
+      const filePath = await localBookCache.getBookFile(
+        bookId,
+        bookFiles[0].path
+      );
+      const content = fs.readFileSync(filePath);
+      return {
+        success: true,
+        message: "Successfully fetched book content",
+        payload: content,
+      };
+    } catch (error) {
+      console.error("Error getting local book path:", error);
+      return {
+        success: false,
+        message: "Failed to get local book content",
+        payload: null,
+      };
+    }
+  }
+
   async getBookFiles(bookId: Id): Promise<ApiResponse<IBookFile[]>> {
     try {
       const bookFiles = await bookFileRepository.findBookFilesByBookId(bookId);

@@ -1,31 +1,32 @@
-import React, { useState, useEffect, Component } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button, message } from 'antd';
-import { ArrowLeftOutlined } from '@ant-design/icons';
-import { deserializeId } from '../../utils/DtoUtils';
-import { ReactReader, EpubView } from 'react-reader';
-const { ipcRenderer } = window.require('electron');
+import React, { useState, useEffect, Component } from "react";
+import { useParams, useNavigate } from "react-router-dom";
+import { Button, message } from "antd";
+import { ArrowLeftOutlined } from "@ant-design/icons";
+import { deserializeId } from "../../utils/DtoUtils";
+import { ReactReader, EpubView } from "react-reader";
+import { bookFileServiceRender } from "../../app";
+const { ipcRenderer } = window.require("electron");
 
 const ReaderPage: React.FC = () => {
   const [epubData, setEpubData] = useState<ArrayBuffer | null>(null);
   const [location, setLocation] = useState<string | number>(0);
-  const { bookId } = useParams<{ bookId: string; }>();
+  const { bookId } = useParams<{ bookId: string }>();
   const navigate = useNavigate();
 
   useEffect(() => {
     const fetchBookFile = async () => {
-      console.log('Fetching book file');
+      console.log("Fetching book file");
       try {
         const id = deserializeId(bookId);
-        const result = await ipcRenderer.invoke('get-local-book-content', id);
+        const result = await bookFileServiceRender.getBookFileContent(id);
         if (result.success) {
-          setEpubData(result.content);
+          setEpubData(result.payload.buffer);
         } else {
-          message.error('Failed to load the book');
+          message.error("Failed to load the book");
         }
       } catch (error) {
-        console.error('Error fetching book file:', error);
-        message.error('An error occurred while loading the book');
+        console.error("Error fetching book file:", error);
+        message.error("An error occurred while loading the book");
       }
     };
 
@@ -40,11 +41,11 @@ const ReaderPage: React.FC = () => {
   };
 
   return (
-    <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <Button
         icon={<ArrowLeftOutlined />}
-        onClick={() => navigate('/')}
-        style={{ margin: '10px' }}
+        onClick={() => navigate("/")}
+        style={{ margin: "10px" }}
       >
         Back to Library
       </Button>
