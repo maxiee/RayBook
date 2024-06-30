@@ -112,16 +112,6 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 
-// 更新书籍信息
-ipcMain.handle("update-book", async (event, book: IBook | null) => {
-  try {
-    return await bookRepository.updateBook(book);
-  } catch (error) {
-    console.error("更新图书时出错:", error);
-    return null;
-  }
-});
-
 // 处理图书添加
 ipcMain.handle(
   "add-book",

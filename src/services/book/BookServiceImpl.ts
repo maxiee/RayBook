@@ -4,6 +4,23 @@ import { IBookService } from "./BookServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 
 class BookService implements IBookService {
+  async updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
+    try {
+      const bookUpdated = await bookRepository.updateBook(book);
+      return {
+        success: true,
+        message: "Successfully updated book",
+        payload: bookUpdated,
+      };
+    } catch (error) {
+      console.error("Failed to update book", error);
+      return {
+        success: false,
+        message: "Failed to update book",
+        payload: null,
+      };
+    }
+  }
   /**
    * Retrieves the latest books based on the specified page and page size.
    * @param page - The page number.

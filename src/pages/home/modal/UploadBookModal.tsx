@@ -22,15 +22,12 @@ const UploadBookModal: React.FC<{
   const [book, setBook] = useState<IBook | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
   const [bookFiles, setBookFiles] = useState<IBookFile[]>([]);
-  const [isEditMode, setIsEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState("1");
 
   useEffect(() => {
     if (bookId) {
-      setIsEditMode(true);
       fetchBookDetails(bookId);
     } else {
-      setIsEditMode(false);
       resetForm();
     }
   }, [bookId]);
@@ -72,23 +69,14 @@ const UploadBookModal: React.FC<{
       const values = await form.validateFields();
       const bookData: Partial<IBook> = {
         ...values,
-        // coverImage: coverBase64
-        //     ? {
-        //         data: coverBase64,
-        //         contentType: coverMimeType || '',
-        //     }
-        //     : undefined,
-        _id: isEditMode ? bookId : undefined,
       };
-      const result = await ipcRenderer.invoke(
-        isEditMode ? "update-book" : "add-book",
-        bookData
-      );
-      if (result.success) {
-        message.success(result.message);
+      const updatedResult = await bookServiceRender.updateBook(bookData);
+      form.setFieldsValue(updatedResult.payload);
+      if (updatedResult.success) {
+        message.success(updatedResult.message);
         onClose();
       } else {
-        message.error(result.message);
+        message.error(updatedResult.message);
       }
     } catch (error) {
       console.error("提交表单时出错:", error);
@@ -120,20 +108,14 @@ const UploadBookModal: React.FC<{
 
   const handleFileDelete = async (fileId: Id) => {
     try {
-      if (isEditMode) {
-        const result = await ipcRenderer.invoke("delete-book-file", fileId);
-        if (result.success) {
-          setBookFiles(
-            bookFiles.filter((file) => file._id.buffer !== fileId.buffer)
-          );
-          message.success("成功删除文件");
-        } else {
-          message.error("删除文件失败");
-        }
-      } else {
+      const result = await ipcRenderer.invoke("delete-book-file", fileId);
+      if (result.success) {
         setBookFiles(
           bookFiles.filter((file) => file._id.buffer !== fileId.buffer)
         );
+        message.success("成功删除文件");
+      } else {
+        message.error("删除文件失败");
       }
     } catch (error) {
       console.error("删除文件时出错:", error);
@@ -183,11 +165,11 @@ const UploadBookModal: React.FC<{
 
   return (
     <Modal
-      title={isEditMode ? "编辑图书" : "添加图书"}
+      title="编辑图书"
       open={open}
       onCancel={onClose}
       onOk={() => (activeTab === "1" ? handleMetadataSubmit() : onClose())}
-      okText={activeTab === "1" ? (isEditMode ? "更新" : "上传") : "完成"}
+      okText={activeTab === "1" ? "更新" : "完成"}
       cancelText="取消"
       width={800}
     >
