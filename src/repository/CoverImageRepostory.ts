@@ -4,7 +4,7 @@ import { toObjectId } from "../utils/DtoUtils";
 import Book from "../models/Book";
 import { BUCKET_NAME } from "../constants";
 
-class CoverIamgeRepostory {
+export class CoverIamgeRepostory {
   static collectionPath: string = "book-cover-images";
 
   /**

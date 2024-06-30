@@ -5,8 +5,8 @@ import { IBookService } from "./BookServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { dialog } from "electron";
 import { epubMetadaService } from "../EpubMetadataService";
-import { bookFileRepository } from "src/repository/BookfileRepository";
-import { coverImageRepository } from "src/repository/CoverImageRepostory";
+import { bookFileRepository } from "../../repository/BookfileRepository";
+import { coverImageRepository } from "../../repository/CoverImageRepostory";
 
 class BookService implements IBookService {
   async addBook(): Promise<ApiResponse<IBook>> {
