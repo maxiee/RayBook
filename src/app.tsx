@@ -6,9 +6,11 @@ import ReaderPage from "./pages/reader/ReaderPage";
 import { createIpcProxy } from "./core/ipc/IpcClient";
 import { IBookService } from "./services/book/BookServiceInterface";
 import { IBookFileService } from "./services/bookfile/BookFileServiceInterface";
+import { IBookCoverService } from "./services/bookcover/BookCoverServiceInterface";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
 export const bookFileServiceRender = createIpcProxy<IBookFileService>("BookFileService");
+export const bookCoverServiceRender = createIpcProxy<IBookCoverService>("BookCoverService");
 
 const App: React.FC = () => {
   return (

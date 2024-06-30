@@ -5,6 +5,7 @@ import { IBook } from '../../../models/Book';
 const { ipcRenderer } = window.require('electron');
 import { useNavigate } from 'react-router-dom';
 import { serializeId } from '../../../utils/DtoUtils';
+import { bookCoverServiceRender } from '../../../app';
 
 interface BookCardProps {
     book: IBook;
@@ -18,9 +19,9 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
 
     // 获取图书封面
     const getCoverImage = async (coverIamgePath: string) => {
-        const result = await ipcRenderer.invoke('get-book-cover', coverIamgePath);
-        if (result.success) {
-            setCoverUrl(result.coverUrl);
+        const result = await bookCoverServiceRender.getBookCover(coverIamgePath);
+        if (result.success && result.payload) {
+            setCoverUrl(result.payload);
         }
     };
 
