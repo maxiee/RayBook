@@ -134,6 +134,12 @@ class BookService implements IBookService {
       };
     }
   }
+
+  batchParseBooksInDirectory(
+    directory: string
+  ): Promise<ApiResponse<Map<string, string[]>>> {
+    throw new Error("Method not implemented.");
+  }
 }
 
 export const bookService = new BookService();

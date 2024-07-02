@@ -38,9 +38,8 @@ const BatchUploadPage: React.FC = () => {
 
   const startBatchUpload = async (directory: string) => {
     try {
-      const bookNames: string[] = await bookServiceRender.getBooksInDirectory(
-        directory
-      );
+      const bookNames: Map<string, string[]> =
+        await bookServiceRender.getBooksInDirectory(directory);
 
       setStatus({
         totalFiles: 0, // 我们稍后会更新这个

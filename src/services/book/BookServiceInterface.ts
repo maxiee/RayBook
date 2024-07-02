@@ -12,4 +12,8 @@ export interface IBookService {
     page: number,
     pageSize: number
   ): Promise<ApiResponse<{ books: IBook[]; total: number }>>;
+
+  batchParseBooksInDirectory(
+    directory: string
+  ): Promise<ApiResponse<Map<string, string[]>>>;
 }
