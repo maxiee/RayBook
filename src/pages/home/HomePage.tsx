@@ -46,6 +46,11 @@ const HomePage: React.FC = () => {
   const handleUploadClickNew = async () => {
     try {
       const bookAddedResult = await bookServiceRender.addBook();
+      if (!bookAddedResult.payload) {
+        console.error("Failed to add book:", bookAddedResult.message);
+        message.error("添加图书失败");
+        return;
+      }
       const bookId: Id = bookAddedResult.payload._id;
       setCurrentBookId(bookId);
       setIsUploadModalOpen(true);
