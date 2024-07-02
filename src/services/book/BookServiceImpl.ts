@@ -1,4 +1,5 @@
 import path from "path";
+import fs from "fs";
 import { bookRepository } from "../../repository/BookRepository";
 import { IBook } from "../../models/Book";
 import { IBookService } from "./BookServiceInterface";
@@ -135,11 +136,79 @@ class BookService implements IBookService {
     }
   }
 
-  batchParseBooksInDirectory(
+  async batchParseBooksInDirectory(
     directory: string
   ): Promise<ApiResponse<Map<string, string[]>>> {
-    throw new Error("Method not implemented.");
+    try {
+      const bookMap = new Map<string, string[]>();
+      const files = await fs.promises.readdir(directory);
+
+      for (const file of files) {
+        const filePath = path.join(directory, file);
+        const stats = await fs.promises.stat(filePath);
+
+        if (stats.isFile()) {
+          const fileNameWithoutExt = path.parse(file).name.toLowerCase();
+          const fileExt = path.extname(file).toLowerCase();
+
+          if (this.supportedEbookFormats.has(fileExt)) {
+            if (!bookMap.has(fileNameWithoutExt)) {
+              bookMap.set(fileNameWithoutExt, []);
+            }
+            bookMap.get(fileNameWithoutExt).push(file);
+          }
+        }
+      }
+
+      // Sort files for each book, prioritizing EPUB format
+      for (const [bookName, files] of bookMap) {
+        files.sort((a, b) => {
+          if (path.extname(a).toLowerCase() === ".epub") return -1;
+          if (path.extname(b).toLowerCase() === ".epub") return 1;
+          return 0;
+        });
+      }
+
+      return {
+        success: true,
+        message: "Successfully parsed books in directory",
+        payload: bookMap,
+      };
+    } catch (error) {
+      console.error("Error parsing books in directory:", error);
+      return {
+        success: false,
+        message: "Failed to parse books in directory",
+        payload: null,
+      };
+    }
   }
+
+  private readonly supportedEbookFormats = new Set([
+    ".epub", // Electronic Publication - open e-book standard by International Digital Publishing Forum (IDPF)
+    ".pdf", // Portable Document Format - developed by Adobe
+    ".mobi", // Mobipocket e-book format
+    ".azw", // Amazon Kindle e-book format
+    ".azw3", // Enhanced version of AZW with better support for complex layouts
+    ".fb2", // FictionBook - open XML-based e-book format
+    ".djvu", // DjVu - format specialized for storing scanned documents
+    ".txt", // Plain text format
+    ".rtf", // Rich Text Format - a formatted text format
+    ".chm", // Microsoft Compiled HTML Help - compressed HTML format
+    ".cbr", // Comic Book Archive file (RAR compressed)
+    ".cbz", // Comic Book Archive file (ZIP compressed)
+    ".docx", // Microsoft Word Open XML Format
+    ".lit", // Microsoft Reader format (deprecated)
+    ".prc", // Palm Resource Compiler format, often used for Mobipocket books
+    ".pdb", // Palm Database format, used for various e-book formats
+    ".htm", // HyperText Markup Language file
+    ".html", // HyperText Markup Language file
+    ".lrf", // Sony Portable Reader format
+    ".lrx", // Sony Reader Digital Book file
+    ".pmlz", // Palm Markup Language Compressed format
+    ".oxps", // Open XML Paper Specification
+    ".xps", // XML Paper Specification
+  ]);
 }
 
 export const bookService = new BookService();
