@@ -16,7 +16,7 @@ import {
 import BookCard from "./components/BookCard";
 import { IBook } from "../../models/Book";
 import UploadBookModal from "./modal/UploadBookModal";
-import { bookServiceRender } from "../../app";
+import { bookServiceRender, fileServiceRender } from "../../app";
 import { useNavigate } from "react-router-dom";
 
 const { ipcRenderer } = window.require("electron");
@@ -69,10 +69,12 @@ const HomePage: React.FC = () => {
   // 添加处理函数
   const handleBatchUpload = async () => {
     try {
-      const result = await ipcRenderer.invoke("select-directory");
-      if (result.filePaths && result.filePaths.length > 0) {
-        const selectedDir = result.filePaths[0];
+      const result = await fileServiceRender.selectDirectory();
+      if (result.success && result.payload) {
+        const selectedDir = result.payload;
         navigate(`/batch-upload?dir=${encodeURIComponent(selectedDir)}`);
+      } else {
+        message.info("未选择目录");
       }
     } catch (error) {
       console.error("选择目录时出错:", error);

@@ -7,16 +7,20 @@ import { createIpcProxy } from "./core/ipc/IpcClient";
 import { IBookService } from "./services/book/BookServiceInterface";
 import { IBookFileService } from "./services/bookfile/BookFileServiceInterface";
 import { IBookCoverService } from "./services/bookcover/BookCoverServiceInterface";
+import { IFileService } from "./services/file/FileServiceInterface";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
-export const bookFileServiceRender = createIpcProxy<IBookFileService>("BookFileService");
-export const bookCoverServiceRender = createIpcProxy<IBookCoverService>("BookCoverService");
+export const bookFileServiceRender =
+  createIpcProxy<IBookFileService>("BookFileService");
+export const bookCoverServiceRender =
+  createIpcProxy<IBookCoverService>("BookCoverService");
+export const fileServiceRender = createIpcProxy<IFileService>("FileService");
 
 const App: React.FC = () => {
   return (
     <Router>
       <Routes>
-      <Route path="/" element={<HomePage />} />
+        <Route path="/" element={<HomePage />} />
         <Route path="/main_window" element={<HomePage />} />
         <Route path="/read/:bookId" element={<ReaderPage />} />
       </Routes>
@@ -28,9 +32,7 @@ function render() {
   const root = ReactDOM.createRoot(
     document.getElementById("root") as HTMLElement
   );
-  root.render(
-    <App />
-  );
+  root.render(<App />);
 }
 
 render();
