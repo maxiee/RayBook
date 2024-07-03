@@ -1,12 +1,7 @@
-import { app, BrowserWindow, ipcMain, dialog, session } from "electron";
-import path from "path";
-import fs from "fs";
+import { app, BrowserWindow, session } from "electron";
 import mongoose from "mongoose";
-import { IBook } from "./models/Book";
 import { minioEndpoint } from "./data/minio/MinioClient";
-import { CoverIamgeRepostory } from "./repository/CoverImageRepostory";
-import { localBookCache } from "./services/LocalBookCacheService";
-import { epubMetadaService } from "./services/EpubMetadataService";
+import { epubService } from "./services/epub/EpubServiceImpl";
 import { registerIpcHandlers } from "./core/ipc/IpcWrapper";
 import { bookFileService } from "./services/bookfile/BookFileServiceImpl";
 import { bookService } from "./services/book/BookServiceImpl";
@@ -113,6 +108,7 @@ registerIpcHandlers(bookService);
 registerIpcHandlers(bookFileService);
 registerIpcHandlers(bookCoverService);
 registerIpcHandlers(fileService);
+registerIpcHandlers(epubService);
 
 // // 删除书籍文件
 // ipcMain.handle('delete-book-file', async (event, fileId) => {

@@ -8,6 +8,7 @@ import { IBookService } from "./services/book/BookServiceInterface";
 import { IBookFileService } from "./services/bookfile/BookFileServiceInterface";
 import { IBookCoverService } from "./services/bookcover/BookCoverServiceInterface";
 import { IFileService } from "./services/file/FileServiceInterface";
+import { IEpubService } from "./services/epub/EpubServiceInterface";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
 export const bookFileServiceRender =
@@ -15,6 +16,7 @@ export const bookFileServiceRender =
 export const bookCoverServiceRender =
   createIpcProxy<IBookCoverService>("BookCoverService");
 export const fileServiceRender = createIpcProxy<IFileService>("FileService");
+export const epubService = createIpcProxy<IEpubService>("EpubService");
 
 const App: React.FC = () => {
   return (
