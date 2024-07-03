@@ -19,8 +19,6 @@ import UploadBookModal from "./modal/UploadBookModal";
 import { bookServiceRender, fileServiceRender } from "../../app";
 import { useNavigate } from "react-router-dom";
 
-const { ipcRenderer } = window.require("electron");
-
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
