@@ -33,6 +33,31 @@ class BookCoverService implements IBookCoverService {
     }
   }
 
+  async extractLocalBookCover(
+    bookId: Id,
+    filePath: string
+  ): Promise<ApiResponse<string>> {
+    try {
+      const coverImageUrl = await coverImageRepository.uploadBookCoverImage(
+        bookId,
+        filePath
+      );
+
+      return {
+        success: true,
+        message: "Successfully extracted cover image",
+        payload: coverImageUrl,
+      };
+    } catch (error) {
+      console.error("Error extracting cover image:", error);
+      return {
+        success: false,
+        message: "Failed to extract cover image",
+        payload: null,
+      };
+    }
+  }
+
   async getBookCover(
     coverImagePath: string
   ): Promise<ApiResponse<string | null>> {

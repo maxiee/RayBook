@@ -52,6 +52,39 @@ class BookFileService implements IBookFileService {
     }
   }
 
+  async uploadBookFileByPath(
+    bookId: Id,
+    filePath: string
+  ): Promise<ApiResponse<IBookFile>> {
+    try {
+      const fileName = path.basename(filePath);
+      const objectName = `books/${Date.now()}_${fileName}`;
+      const newUploadBookFile = await bookFileRepository.uploadBookFile(
+        bookId,
+        filePath,
+        fileName,
+        objectName
+      );
+
+      if (!newUploadBookFile) {
+        return null;
+      }
+
+      return {
+        success: true,
+        message: "Book file uploaded successfully",
+        payload: newUploadBookFile,
+      };
+    } catch (error) {
+      console.error("Error uploading file:", error);
+      return {
+        success: false,
+        message: "Failed to upload book file",
+        payload: null,
+      };
+    }
+  }
+
   async uploadBookFile(bookId: Id): Promise<ApiResponse<IBookFile>> {
     try {
       const result = await dialog.showOpenDialog({

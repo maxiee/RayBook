@@ -1,6 +1,4 @@
-import { BookFile, IBookFile } from "../models/BookFile";
 import Book, { IBook } from "../models/Book";
-import { SchemaTypes } from "mongoose";
 import { toObjectId } from "../utils/DtoUtils";
 
 class BookRepository {

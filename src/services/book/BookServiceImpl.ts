@@ -10,6 +10,23 @@ import { coverImageRepository } from "../../repository/CoverImageRepostory";
 import { epubService } from "../epub/EpubServiceImpl";
 
 class BookService implements IBookService {
+  async addBookByModel(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
+    try {
+      const newBook = await bookRepository.createNewBook(book);
+      return {
+        success: true,
+        message: "Successfully added book",
+        payload: newBook,
+      };
+    } catch (error) {
+      console.error("Failed to add book", error);
+      return {
+        success: false,
+        message: "Failed to add book",
+        payload: null,
+      };
+    }
+  }
   async addBook(): Promise<ApiResponse<IBook>> {
     try {
       const result = await dialog.showOpenDialog({
@@ -166,15 +183,6 @@ class BookService implements IBookService {
         }
       }
 
-      // Sort files for each book, prioritizing EPUB format
-      for (const [bookName, files] of bookMap) {
-        files.sort((a, b) => {
-          if (path.extname(a).toLowerCase() === ".epub") return -1;
-          if (path.extname(b).toLowerCase() === ".epub") return 1;
-          return 0;
-        });
-      }
-
       // 第二步：处理每本书
       const booksWithFiles: BookWithFiles[] = [];
       for (const [bookName, files] of bookMap) {
@@ -183,6 +191,7 @@ class BookService implements IBookService {
           files: files.map((filePath) => ({
             filename: path.basename(filePath),
             fullPath: filePath,
+            fileExtension: path.extname(filePath),
           })),
         };
 

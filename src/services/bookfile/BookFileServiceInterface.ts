@@ -2,6 +2,11 @@ import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { IBookFile } from "../../models/BookFile";
 
 export interface IBookFileService {
+  uploadBookFileByPath(
+    bookId: Id,
+    filePath: string
+  ): Promise<ApiResponse<IBookFile>>;
+
   uploadBookFile(bookId: Id): Promise<ApiResponse<IBookFile>>;
 
   getBookFiles(bookId: Id): Promise<ApiResponse<IBookFile[]>>;

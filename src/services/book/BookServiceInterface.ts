@@ -2,6 +2,8 @@ import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { IBook } from "../../models/Book";
 
 export interface IBookService {
+  addBookByModel(book: Partial<IBook>): Promise<ApiResponse<IBook>>;
+
   addBook(): Promise<ApiResponse<IBook>>;
 
   updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook | null>>;
@@ -23,5 +25,6 @@ export interface BookWithFiles {
   files: {
     filename: string; // 带有后缀的文件名
     fullPath: string; // 文件的完整路径
+    fileExtension: string; // 文件扩展名(.epub, .pdf, .mobi, etc.)
   }[];
 }
