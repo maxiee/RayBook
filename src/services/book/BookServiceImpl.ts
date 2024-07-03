@@ -2,12 +2,12 @@ import path from "path";
 import fs from "fs";
 import { bookRepository } from "../../repository/BookRepository";
 import { IBook } from "../../models/Book";
-import { IBookService } from "./BookServiceInterface";
+import { BookWithFiles, IBookService } from "./BookServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { dialog } from "electron";
-import { epubMetadaService } from "../EpubMetadataService";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { coverImageRepository } from "../../repository/CoverImageRepostory";
+import { epubService } from "../epub/EpubServiceImpl";
 
 class BookService implements IBookService {
   async addBook(): Promise<ApiResponse<IBook>> {
@@ -28,7 +28,7 @@ class BookService implements IBookService {
       console.log("add-new-book objectName:", objectName);
       console.log("add-new-book fileName:", fileName);
 
-      const metadata = await epubMetadaService.extractMetadata(filePath);
+      const metadata = await epubService.extractMetadata(filePath);
       console.log("add-new-book metadata:", metadata);
 
       const newBook = await bookRepository.createNewBook({
@@ -136,13 +136,19 @@ class BookService implements IBookService {
     }
   }
 
+  /**
+   * Parses the books in the specified directory and returns the result as an ApiResponse.
+   * @param directory - The directory path where the books are located.
+   * @returns A Promise that resolves to an ApiResponse containing the parsed books with their files.
+   */
   async batchParseBooksInDirectory(
     directory: string
-  ): Promise<ApiResponse<Map<string, string[]>>> {
+  ): Promise<ApiResponse<BookWithFiles[]>> {
     try {
       const bookMap = new Map<string, string[]>();
       const files = await fs.promises.readdir(directory);
 
+      // 第一步：收集文件
       for (const file of files) {
         const filePath = path.join(directory, file);
         const stats = await fs.promises.stat(filePath);
@@ -155,7 +161,7 @@ class BookService implements IBookService {
             if (!bookMap.has(fileNameWithoutExt)) {
               bookMap.set(fileNameWithoutExt, []);
             }
-            bookMap.get(fileNameWithoutExt).push(file);
+            bookMap.get(fileNameWithoutExt).push(filePath);
           }
         }
       }
@@ -169,17 +175,31 @@ class BookService implements IBookService {
         });
       }
 
+      // 第二步：处理每本书
+      const booksWithFiles: BookWithFiles[] = [];
+      for (const [bookName, files] of bookMap) {
+        const bookWithFiles: BookWithFiles = {
+          name: bookName,
+          files: files.map((filePath) => ({
+            filename: path.basename(filePath),
+            fullPath: filePath,
+          })),
+        };
+
+        booksWithFiles.push(bookWithFiles);
+      }
+
       return {
         success: true,
         message: "Successfully parsed books in directory",
-        payload: bookMap,
+        payload: booksWithFiles,
       };
     } catch (error) {
       console.error("Error parsing books in directory:", error);
       return {
         success: false,
         message: "Failed to parse books in directory",
-        payload: null,
+        payload: [],
       };
     }
   }

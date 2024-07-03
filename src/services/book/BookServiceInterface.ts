@@ -15,5 +15,13 @@ export interface IBookService {
 
   batchParseBooksInDirectory(
     directory: string
-  ): Promise<ApiResponse<Map<string, string[]>>>;
+  ): Promise<ApiResponse<BookWithFiles[]>>;
+}
+
+export interface BookWithFiles {
+  name: string; // 书名（去除后缀的文件名）
+  files: {
+    filename: string; // 带有后缀的文件名
+    fullPath: string; // 文件的完整路径
+  }[];
 }
