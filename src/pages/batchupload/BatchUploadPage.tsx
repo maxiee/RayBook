@@ -71,7 +71,7 @@ const BatchUploadPage: React.FC = () => {
         // 提取元数据
         // 如果 files 中有 epub，则从 epub 中提取元数据
         // 如果 files 中没有 epub，则创建只有书名的空元数据
-        const bookMetadata = {
+        let bookMetadata = {
           title: bookName,
           author: "",
           publisher: "",
@@ -91,13 +91,15 @@ const BatchUploadPage: React.FC = () => {
           logServiceRender.info("Epub metadata:", epubMetadata);
           const metadataPayload: IMetadata = epubMetadata.payload;
           if (epubMetadata.success && metadataPayload) {
-            Object.assign(bookMetadata, {
-              title: metadataPayload.title,
-              authors: metadataPayload.creator,
-              publisher: metadataPayload.publisher,
-              isbn: metadataPayload.ISBN,
-              publicationYear: new Date(metadataPayload.date).getFullYear(),
-            });
+            bookMetadata = {
+              title: metadataPayload.title || bookName,
+              author: metadataPayload.creator || "",
+              publisher: metadataPayload.publisher || "",
+              isbn: metadataPayload.ISBN || "",
+              publicationYear: metadataPayload.date
+                ? new Date(metadataPayload.date).getFullYear()
+                : 0,
+            };
           }
           logServiceRender.info("Book metadata:", bookMetadata);
         }
