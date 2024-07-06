@@ -183,10 +183,12 @@ const UploadBookModal: React.FC<{
         </TabPane>
         <TabPane tab="电子书文件" key="2">
           <BookFilesManager
+            bookId={bookId}
             bookFiles={bookFiles}
             onFileUpload={handleFileUpload}
             onFileDelete={handleFileDelete}
             onExtractCover={handleExtractCover}
+            onFilesUpdate={() => fetchBookDetails(bookId)}
           />
         </TabPane>
       </Tabs>

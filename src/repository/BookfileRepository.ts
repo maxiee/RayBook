@@ -67,7 +67,7 @@ class BookFileRepostory {
   async updateFileMd5(fileId: Id, filePath: string): Promise<IBookFile | null> {
     const md5 = await this.calculateMd5(filePath);
     return await BookFile.findByIdAndUpdate(
-      fileId,
+      toObjectId(fileId),
       { md5 },
       { new: true }
     ).lean();
