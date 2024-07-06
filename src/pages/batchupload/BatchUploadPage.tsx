@@ -84,9 +84,11 @@ const BatchUploadPage: React.FC = () => {
         );
         // 提取 epub 元数据
         if (epubFile) {
+          logServiceRender.info("Extracting metadata from epub:", epubFile);
           const epubMetadata = await epubServiceRender.extractMetadata(
             epubFile.fullPath
           );
+          logServiceRender.info("Epub metadata:", epubMetadata);
           const metadataPayload: IMetadata = epubMetadata.payload;
           if (epubMetadata.success && metadataPayload) {
             Object.assign(bookMetadata, {
@@ -97,6 +99,7 @@ const BatchUploadPage: React.FC = () => {
               publicationYear: new Date(metadataPayload.date).getFullYear(),
             });
           }
+          logServiceRender.info("Book metadata:", bookMetadata);
         }
 
         const bookModelSaveResult = await bookServiceRender.addBookByModel({
