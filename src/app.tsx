@@ -10,6 +10,7 @@ import { IBookCoverService } from "./services/bookcover/BookCoverServiceInterfac
 import { IFileService } from "./services/file/FileServiceInterface";
 import { IEpubService } from "./services/epub/EpubServiceInterface";
 import BatchUploadPage from "./pages/batchupload/BatchUploadPage";
+import { ILogService } from "./services/log/LogServiceInterface";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
 export const bookFileServiceRender =
@@ -18,6 +19,7 @@ export const bookCoverServiceRender =
   createIpcProxy<IBookCoverService>("BookCoverService");
 export const fileServiceRender = createIpcProxy<IFileService>("FileService");
 export const epubServiceRender = createIpcProxy<IEpubService>("EpubService");
+export const logServiceRender = createIpcProxy<ILogService>("LogService");
 
 const App: React.FC = () => {
   return (
