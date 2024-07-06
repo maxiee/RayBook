@@ -90,7 +90,7 @@ const BatchUploadPage: React.FC = () => {
           );
           logServiceRender.info("Epub metadata:", epubMetadata);
           const metadataPayload: IMetadata = epubMetadata.payload;
-          if (epubMetadata.success && metadataPayload) {
+          if (epubMetadata.success) {
             bookMetadata = {
               title: metadataPayload.title || bookName,
               author: metadataPayload.creator || "",
@@ -101,16 +101,11 @@ const BatchUploadPage: React.FC = () => {
                 : 0,
             };
           }
-          logServiceRender.info("Book metadata:", bookMetadata);
         }
-
-        const bookModelSaveResult = await bookServiceRender.addBookByModel({
-          title: bookMetadata.title,
-          author: bookMetadata.author,
-          publisher: bookMetadata.publisher,
-          isbn: bookMetadata.isbn,
-          publicationYear: bookMetadata.publicationYear,
-        });
+        logServiceRender.info("Book metadata:", bookMetadata);
+        const bookModelSaveResult = await bookServiceRender.addBookByModel(
+          bookMetadata
+        );
 
         if (!bookModelSaveResult.payload) {
           logServiceRender.error(
