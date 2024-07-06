@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
-import { Progress, Table, Typography, Card, message } from "antd";
+import { Progress, Table, Typography, Card, message, Button } from "antd";
 import {
   bookCoverServiceRender,
   bookFileServiceRender,
@@ -13,6 +13,7 @@ import { IMetadata } from "epub2/lib/epub/const";
 const { Title, Text } = Typography;
 
 const BatchUploadPage: React.FC = () => {
+  const [isUploading, setIsUploading] = useState(false);
   const [totalFiles, setTotalFiles] = useState(0);
   const [totalBooks, setTotalBooks] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -181,6 +182,19 @@ const BatchUploadPage: React.FC = () => {
     }
   };
 
+  const handleStartUpload = async () => {
+    setIsUploading(true);
+    try {
+      await startBatchUpload();
+      message.success("批量上传完成");
+    } catch (error) {
+      console.error("批量上传失败:", error);
+      message.error("批量上传失败");
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
   const columns = [
     {
       title: "书名",
@@ -250,6 +264,16 @@ const BatchUploadPage: React.FC = () => {
         dataSource={bookWithFileList}
         rowKey="name"
       />
+      <Button
+        type="primary"
+        size="large"
+        onClick={handleStartUpload}
+        disabled={isUploading || bookWithFileList.length === 0}
+        loading={isUploading}
+        style={{ marginTop: "20px" }}
+      >
+        {isUploading ? "正在上传..." : "开始上传"}
+      </Button>
     </div>
   );
 };
