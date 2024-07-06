@@ -24,10 +24,18 @@ class BookFileRepostory {
     const fileStats = fs.statSync(filePath);
     const fileExtension = path.extname(filePath).slice(1);
 
+    // 计算文件的 MD5
+    const md5 = await this.calculateMd5(filePath);
+    // 检查是否存在具有相同 MD5 的文件
+    const existingFile = await this.findBookFileByMd5(md5);
+    if (existingFile) {
+      throw new Error("已存在具有相同 MD5 的文件");
+    }
+
     const existingBookFile = await this.findBookFileByObjectName(objectName);
     if (existingBookFile) {
       console.log("File already exists");
-      return null;
+      throw new Error("MinIO 中已存在该文件");
     }
 
     const newBookFile = new BookFile({
@@ -36,6 +44,7 @@ class BookFileRepostory {
       path: objectName,
       size: fileStats.size,
       book: toObjectId(bookId),
+      md5: md5,
     });
     await newBookFile.save();
 
@@ -81,6 +90,10 @@ class BookFileRepostory {
       stream.on("end", () => resolve(hash.digest("hex")));
       stream.on("error", reject);
     });
+  }
+
+  async findBookFileByMd5(md5: string): Promise<IBookFile | null> {
+    return await BookFile.findOne({ md5 }).lean();
   }
 
   //   async removeBookFile(bookId: string, fileId: string): Promise<boolean> {

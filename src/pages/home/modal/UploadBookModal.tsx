@@ -98,11 +98,11 @@ const UploadBookModal: React.FC<{
           message.warning("该文件已存在，请勿重复添加");
         }
       } else {
-        message.error("添加电子书文件失败");
+        message.error("添加电子书文件失败: " + result.message);
       }
     } catch (error) {
       console.error("上传文件时出错:", error);
-      message.error("上传文件失败");
+      message.error("上传文件失败: " + error.message);
     }
   };
 

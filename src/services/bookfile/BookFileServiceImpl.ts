@@ -93,7 +93,11 @@ class BookFileService implements IBookFileService {
       });
 
       if (result.canceled || result.filePaths.length === 0) {
-        return null;
+        return {
+          success: false,
+          message: "未选择文件",
+          payload: null,
+        };
       }
 
       const filePath = result.filePaths[0];
@@ -107,7 +111,11 @@ class BookFileService implements IBookFileService {
       );
 
       if (!newUploadBookFile) {
-        return null;
+        return {
+          success: false,
+          message: "Failed to upload book file",
+          payload: null,
+        };
       }
 
       return {
@@ -119,7 +127,7 @@ class BookFileService implements IBookFileService {
       console.error("Error uploading file:", error);
       return {
         success: false,
-        message: "Failed to upload book file",
+        message: "Failed to upload book file: " + error.message,
         payload: null,
       };
     }
