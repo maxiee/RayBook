@@ -1,7 +1,6 @@
 import fs from "fs";
 import path from "path";
-import crypto from "crypto";
-import { BookFile, IBookFile } from "../../models/BookFile";
+import { IBookFile } from "../../models/BookFile";
 import { IBookFileService } from "./BookFileServiceInterface";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { dialog } from "electron";
@@ -126,40 +125,34 @@ class BookFileService implements IBookFileService {
     }
   }
 
-  async updateFileMd5(
-    fileId: Id,
-    filePath: string
+  async calculateAndUpdateMd5(
+    bookId: Id,
+    fileId: Id
   ): Promise<ApiResponse<IBookFile>> {
     try {
-      const md5 = await this.calculateMd5(filePath);
-      const ret = await BookFile.findByIdAndUpdate(
+      const bookFile = await bookFileRepository.findBookFileById(fileId);
+      if (!bookFile) {
+        return { success: false, message: "文件不存在", payload: null };
+      }
+      const filePath = await localBookCache.getBookFile(bookId, bookFile.path);
+      const updatedBookFile = await bookFileRepository.updateFileMd5(
         fileId,
-        { md5 },
-        { new: true }
-      ).lean();
+        filePath
+      );
+
+      if (!updatedBookFile) {
+        return { success: false, message: "更新MD5失败", payload: null };
+      }
+
       return {
         success: true,
-        message: "Successfully updated file md5",
-        payload: ret,
+        message: "成功计算并更新MD5",
+        payload: updatedBookFile,
       };
     } catch (error) {
-      console.error("Failed to update file md5:", error);
-      return {
-        success: false,
-        message: "Failed to update file md5",
-        payload: null,
-      };
+      console.error("计算或更新MD5时出错:", error);
+      return { success: false, message: "计算或更新MD5失败", payload: null };
     }
-  }
-
-  private async calculateMd5(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const hash = crypto.createHash("md5");
-      const stream = fs.createReadStream(filePath);
-      stream.on("data", (data) => hash.update(data));
-      stream.on("end", () => resolve(hash.digest("hex")));
-      stream.on("error", reject);
-    });
   }
 }
 

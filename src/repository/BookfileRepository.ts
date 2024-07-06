@@ -4,6 +4,7 @@ import { BookFile, IBookFile } from "../models/BookFile";
 import s3Client from "../data/minio/MinioClient";
 import { toObjectId } from "../utils/DtoUtils";
 import { BUCKET_NAME } from "../constants";
+import crypto from "crypto";
 
 class BookFileRepostory {
   /**
@@ -61,6 +62,25 @@ class BookFileRepostory {
 
   async findBookFilesByBookId(bookId: Id): Promise<IBookFile[]> {
     return await BookFile.find({ book: toObjectId(bookId) }).lean();
+  }
+
+  async updateFileMd5(fileId: Id, filePath: string): Promise<IBookFile | null> {
+    const md5 = await this.calculateMd5(filePath);
+    return await BookFile.findByIdAndUpdate(
+      fileId,
+      { md5 },
+      { new: true }
+    ).lean();
+  }
+
+  private async calculateMd5(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = crypto.createHash("md5");
+      const stream = fs.createReadStream(filePath);
+      stream.on("data", (data) => hash.update(data));
+      stream.on("end", () => resolve(hash.digest("hex")));
+      stream.on("error", reject);
+    });
   }
 
   //   async removeBookFile(bookId: string, fileId: string): Promise<boolean> {
