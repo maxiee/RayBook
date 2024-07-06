@@ -50,7 +50,8 @@ class BookService implements IBookService {
       logService.warn("add-new-book objectName:", objectName);
       logService.warn("add-new-book fileName:", fileName);
 
-      const metadata = await epubService.extractMetadata(filePath);
+      const metadataModel = await epubService.extractMetadata(filePath);
+      const metadata = metadataModel.payload;
       logService.info(`Extracted metadata from book: ${metadata.title}`);
 
       const newBook = await bookRepository.createNewBook({
