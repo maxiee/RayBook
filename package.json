@@ -2,11 +2,10 @@
   "name": "raybook",
   "productName": "raybook",
   "version": "1.0.0",
-  "description": "My Electron application description",
+  "description": "RayBook - An open source ebook reader",
   "main": ".webpack/main",
   "scripts": {
     "start": "electron-forge start",
-    "package": "electron-forge package",
     "make": "electron-forge make",
     "publish": "electron-forge publish",
     "lint": "eslint --ext .ts,.tsx .",
@@ -50,6 +49,7 @@
   "dependencies": {
     "antd": "^5.18.3",
     "aws-sdk": "^2.1646.0",
+    "electron-is-dev": "^3.0.1",
     "electron-squirrel-startup": "^1.0.1",
     "epub2": "^3.0.2",
     "mongoose": "^8.4.3",
