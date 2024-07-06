@@ -17,7 +17,7 @@ class BookRepository {
   ): Promise<{ books: IBook[]; total: number }> {
     const skip = (page - 1) * pageSize;
     const [books, total] = await Promise.all([
-      Book.find().skip(skip).limit(pageSize).lean(),
+      Book.find().sort({ _id: -1 }).skip(skip).limit(pageSize).lean(),
       Book.countDocuments(),
     ]);
     return { books, total };
