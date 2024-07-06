@@ -3,6 +3,7 @@ import s3Client from "../data/minio/MinioClient";
 import { toObjectId } from "../utils/DtoUtils";
 import Book from "../models/Book";
 import { BUCKET_NAME } from "../constants";
+import { logService } from "../services/log/LogServiceImpl";
 
 export class CoverIamgeRepostory {
   static collectionPath: string = "book-cover-images";
@@ -31,7 +32,7 @@ export class CoverIamgeRepostory {
       });
       return coverUrl;
     } catch (error) {
-      console.error("Error fetching cover image:", error);
+      logService.error("Error fetching cover image:", error);
       return null;
     }
   }
@@ -48,7 +49,7 @@ export class CoverIamgeRepostory {
   ): Promise<string | null> {
     const epub: EPub = await EPub.createAsync(filepath);
     const coverPath = epub.metadata.cover;
-    console.log("coverPath:", coverPath);
+    logService.info("coverPath:", coverPath);
 
     if (!coverPath) return null;
 
@@ -68,7 +69,7 @@ export class CoverIamgeRepostory {
       toObjectId(bookId).toHexString(),
       coverData.mimeType
     );
-    console.log("coverObjectName:", coverObjectName);
+    logService.info("coverObjectName:", coverObjectName);
 
     await s3Client
       .putObject({

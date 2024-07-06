@@ -7,7 +7,7 @@ import {
   CalculatorOutlined,
 } from "@ant-design/icons";
 import { IBookFile } from "../../../../models/BookFile";
-import { bookFileServiceRender } from "../../../../app";
+import { bookFileServiceRender, logServiceRender } from "../../../../app";
 
 interface BookFilesManagerProps {
   bookId: Id;
@@ -74,7 +74,7 @@ const BookFilesManager: React.FC<BookFilesManagerProps> = ({
     },
   ];
 
-  console.log("bookFiles: ", bookFiles);
+  logServiceRender.info("bookFiles: ", bookFiles);
 
   return (
     <>

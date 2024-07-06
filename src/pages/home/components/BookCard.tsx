@@ -4,8 +4,8 @@ import { MoreOutlined, EditOutlined, ReadOutlined } from "@ant-design/icons";
 import { IBook } from "../../../models/Book";
 const { ipcRenderer } = window.require("electron");
 import { useNavigate } from "react-router-dom";
-import { serializeId } from "../../../utils/DtoUtils";
-import { bookCoverServiceRender } from "../../../app";
+import { serializeId, toObjectId } from "../../../utils/DtoUtils";
+import { bookCoverServiceRender, logServiceRender } from "../../../app";
 
 interface BookCardProps {
   book: IBook;
@@ -44,7 +44,7 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
       label: (
         <a
           onClick={() => {
-            console.log(book._id);
+            logServiceRender.info(toObjectId(book._id).toHexString());
             const serializedId = serializeId(book._id);
             navigate(`/read/${serializedId}`);
           }}

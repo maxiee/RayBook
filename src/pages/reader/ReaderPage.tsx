@@ -4,7 +4,7 @@ import { Button, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { deserializeId } from "../../utils/DtoUtils";
 import { ReactReader, EpubView } from "react-reader";
-import { bookFileServiceRender } from "../../app";
+import { bookFileServiceRender, logServiceRender } from "../../app";
 const { ipcRenderer } = window.require("electron");
 
 const ReaderPage: React.FC = () => {
@@ -15,7 +15,7 @@ const ReaderPage: React.FC = () => {
 
   useEffect(() => {
     const fetchBookFile = async () => {
-      console.log("Fetching book file");
+      logServiceRender.info("Fetching book file");
       try {
         const id = deserializeId(bookId);
         const result = await bookFileServiceRender.getBookFileContent(id);
@@ -25,7 +25,7 @@ const ReaderPage: React.FC = () => {
           message.error("Failed to load the book");
         }
       } catch (error) {
-        console.error("Error fetching book file:", error);
+        logServiceRender.error("Error fetching book file:", error);
         message.error("An error occurred while loading the book");
       }
     };

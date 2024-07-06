@@ -1,6 +1,7 @@
 import { dialog } from "electron";
 import { IFileService } from "./FileServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
+import { logService } from "../log/LogServiceImpl";
 
 class FileService implements IFileService {
   async selectDirectory(): Promise<ApiResponse<string>> {
@@ -23,7 +24,7 @@ class FileService implements IFileService {
         payload: result.filePaths[0],
       };
     } catch (error) {
-      console.error("Error selecting directory:", error);
+      logService.error("Error selecting directory:", error);
       return {
         success: false,
         message: "Failed to select directory",

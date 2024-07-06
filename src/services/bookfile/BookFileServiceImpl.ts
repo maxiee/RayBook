@@ -6,6 +6,7 @@ import { bookFileRepository } from "../../repository/BookfileRepository";
 import { dialog } from "electron";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { localBookCache } from "../LocalBookCacheService";
+import { logService } from "../log/LogServiceImpl";
 
 class BookFileService implements IBookFileService {
   async getBookFileContent(bookId: Id): Promise<ApiResponse<Buffer | null>> {
@@ -25,7 +26,7 @@ class BookFileService implements IBookFileService {
         payload: content,
       };
     } catch (error) {
-      console.error("Error getting local book path:", error);
+      logService.error("Error getting local book path:", error);
       return {
         success: false,
         message: "Failed to get local book content",
@@ -43,7 +44,7 @@ class BookFileService implements IBookFileService {
         payload: bookFiles,
       };
     } catch (error) {
-      console.error("Failed to fetch book files", error);
+      logService.error("Failed to fetch book files", error);
       return {
         success: false,
         message: "Failed to fetch book files",
@@ -76,7 +77,7 @@ class BookFileService implements IBookFileService {
         payload: newUploadBookFile,
       };
     } catch (error) {
-      console.error("Error uploading file:", error);
+      logService.error("Error uploading file:", error);
       return {
         success: false,
         message: "Failed to upload book file",
@@ -124,7 +125,7 @@ class BookFileService implements IBookFileService {
         payload: newUploadBookFile,
       };
     } catch (error) {
-      console.error("Error uploading file:", error);
+      logService.error("Error uploading file:", error);
       return {
         success: false,
         message: "Failed to upload book file: " + error.message,
@@ -158,7 +159,7 @@ class BookFileService implements IBookFileService {
         payload: updatedBookFile,
       };
     } catch (error) {
-      console.error("计算或更新MD5时出错:", error);
+      logService.error("计算或更新MD5时出错:", error);
       return { success: false, message: "计算或更新MD5失败", payload: null };
     }
   }

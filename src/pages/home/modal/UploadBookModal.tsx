@@ -9,6 +9,7 @@ import {
   bookCoverServiceRender,
   bookFileServiceRender,
   bookServiceRender,
+  logServiceRender,
 } from "../../../app";
 
 const { TabPane } = Tabs;
@@ -54,7 +55,7 @@ const UploadBookModal: React.FC<{
       const _bookFilesResult = await bookFileServiceRender.getBookFiles(id);
       if (_bookFilesResult.success) setBookFiles(_bookFilesResult.payload);
     } catch (error) {
-      console.error("Error fetching book details:", error);
+      logServiceRender.error("Error fetching book details:", error);
       message.error("获取书籍详情时出错");
     }
   };
@@ -79,7 +80,7 @@ const UploadBookModal: React.FC<{
         message.error(updatedResult.message);
       }
     } catch (error) {
-      console.error("提交表单时出错:", error);
+      logServiceRender.error("提交表单时出错:", error);
       message.error("提交表单失败");
     }
   };
@@ -101,7 +102,7 @@ const UploadBookModal: React.FC<{
         message.error("添加电子书文件失败: " + result.message);
       }
     } catch (error) {
-      console.error("上传文件时出错:", error);
+      logServiceRender.error("上传文件时出错:", error);
       message.error("上传文件失败: " + error.message);
     }
   };
@@ -118,7 +119,7 @@ const UploadBookModal: React.FC<{
         message.error("删除文件失败");
       }
     } catch (error) {
-      console.error("删除文件时出错:", error);
+      logServiceRender.error("删除文件时出错:", error);
       message.error("删除文件失败");
     }
   };
@@ -154,7 +155,7 @@ const UploadBookModal: React.FC<{
         message.error("提取封面失败");
       }
     } catch (error) {
-      console.error("提取封面时出错:", error);
+      logServiceRender.error("提取封面时出错:", error);
       message.error("提取封面失败");
     }
   };

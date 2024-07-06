@@ -6,6 +6,7 @@ import {
   bookFileServiceRender,
   bookServiceRender,
   epubServiceRender,
+  logServiceRender,
 } from "../../app";
 import { BookWithFiles } from "../../services/book/BookServiceInterface";
 import { IMetadata } from "epub2/lib/epub/const";
@@ -31,11 +32,13 @@ const BatchUploadPage: React.FC = () => {
     const searchParams = new URLSearchParams(location.search);
     const selectedDir = searchParams.get("dir");
     if (selectedDir) {
+      logServiceRender.info("Selected directory:", selectedDir);
       loadBooks(selectedDir);
     }
   }, [location]);
 
   const loadBooks = async (directory: string) => {
+    logServiceRender.info("Loading books from directory:", directory);
     // 已将 epub 类型文件放在 files 的第一位
     const bookBatchResult = await bookServiceRender.batchParseBooksInDirectory(
       directory
@@ -43,7 +46,7 @@ const BatchUploadPage: React.FC = () => {
     const bookBatch = bookBatchResult.payload;
 
     if (!bookBatch) {
-      console.error("Failed to batch parse books");
+      logServiceRender.error("Failed to batch parse books");
       message.error("批量解析书籍失败");
       return;
     }
@@ -105,7 +108,7 @@ const BatchUploadPage: React.FC = () => {
         });
 
         if (!bookModelSaveResult.payload) {
-          console.error(
+          logServiceRender.error(
             "Failed to save book model:",
             bookModelSaveResult.message
           );
@@ -124,7 +127,7 @@ const BatchUploadPage: React.FC = () => {
               epubFile.fullPath
             );
           if (!coverImageResult.success) {
-            console.error(
+            logServiceRender.error(
               "Failed to extract cover image:",
               coverImageResult.message
             );
@@ -155,7 +158,7 @@ const BatchUploadPage: React.FC = () => {
               bookWithFileList[i].files[j].fullPath
             );
           if (!fileUploadResult.success) {
-            console.error(
+            logServiceRender.error(
               `Failed to upload file ${fileName} for book ${bookName}:`,
               fileUploadResult.message
             );
@@ -177,7 +180,7 @@ const BatchUploadPage: React.FC = () => {
       }
       message.success("批量上传书籍成功");
     } catch (error) {
-      console.error("Failed to batch upload books:", error);
+      logServiceRender.error("Failed to batch upload books:", error);
       message.error("批量上传书籍失败");
     }
   };
@@ -188,7 +191,7 @@ const BatchUploadPage: React.FC = () => {
       await startBatchUpload();
       message.success("批量上传完成");
     } catch (error) {
-      console.error("批量上传失败:", error);
+      logServiceRender.error("批量上传失败:", error);
       message.error("批量上传失败");
     } finally {
       setIsUploading(false);

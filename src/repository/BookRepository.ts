@@ -1,9 +1,13 @@
+import { logService } from "../services/log/LogServiceImpl";
 import Book, { IBook } from "../models/Book";
 import { toObjectId } from "../utils/DtoUtils";
 
 class BookRepository {
   async findBookById(id: Id): Promise<IBook | null> {
-    console.log("BookRepository findBookById id: ", id);
+    logService.info(
+      "BookRepository findBookById id: ",
+      toObjectId(id).toHexString()
+    );
     return await Book.findById(toObjectId(id)).lean();
   }
 

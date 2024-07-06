@@ -8,18 +8,21 @@ import { dialog } from "electron";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { coverImageRepository } from "../../repository/CoverImageRepostory";
 import { epubService } from "../epub/EpubServiceImpl";
+import { logService } from "../log/LogServiceImpl";
 
 class BookService implements IBookService {
   async addBookByModel(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
+    logService.info(`Adding new book: ${book.title}`);
     try {
       const newBook = await bookRepository.createNewBook(book);
+      logService.info(`Successfully added book: ${newBook._id}`);
       return {
         success: true,
         message: "Successfully added book",
         payload: newBook,
       };
     } catch (error) {
-      console.error("Failed to add book", error);
+      logService.error(`Failed to add book: ${book.title}`, error);
       return {
         success: false,
         message: "Failed to add book",
@@ -28,6 +31,7 @@ class BookService implements IBookService {
     }
   }
   async addBook(): Promise<ApiResponse<IBook>> {
+    logService.info("Adding new book");
     try {
       const result = await dialog.showOpenDialog({
         properties: ["openFile"],
@@ -35,18 +39,19 @@ class BookService implements IBookService {
       });
 
       if (result.canceled || result.filePaths.length === 0) {
+        logService.warn("No file selected");
         return { success: false, message: "No file selected", payload: null };
       }
 
       const filePath = result.filePaths[0];
       const fileName = path.basename(filePath);
       const objectName = `books/${Date.now()}_${fileName}`;
-      console.log("add-new-book filePath:", filePath);
-      console.log("add-new-book objectName:", objectName);
-      console.log("add-new-book fileName:", fileName);
+      logService.warn("add-new-book filePath:", filePath);
+      logService.warn("add-new-book objectName:", objectName);
+      logService.warn("add-new-book fileName:", fileName);
 
       const metadata = await epubService.extractMetadata(filePath);
-      console.log("add-new-book metadata:", metadata);
+      logService.info(`Extracted metadata from book: ${metadata.title}`);
 
       const newBook = await bookRepository.createNewBook({
         title: metadata.title,
@@ -55,7 +60,7 @@ class BookService implements IBookService {
         isbn: metadata.ISBN,
         publicationYear: new Date(metadata.date).getFullYear(),
       });
-      console.log("add-new-book newBook:", newBook);
+      logService.warn("add-new-book newBook:", newBook);
 
       const newUploadBookFile = await bookFileRepository.uploadBookFile(
         newBook._id,
@@ -63,13 +68,13 @@ class BookService implements IBookService {
         fileName,
         objectName
       );
-      console.log("add-new-book newUploadBookFile:", newUploadBookFile);
+      logService.warn("add-new-book newUploadBookFile:", newUploadBookFile);
 
       const coverIamgeUrl = await coverImageRepository.uploadBookCoverImage(
         newBook._id,
         filePath
       );
-      console.log("add-new-book coverIamgeUrl:", coverIamgeUrl);
+      logService.warn("add-new-book coverIamgeUrl:", coverIamgeUrl);
 
       return {
         success: true,
@@ -77,7 +82,7 @@ class BookService implements IBookService {
         payload: newBook,
       };
     } catch (error) {
-      console.error("Failed to add book", error);
+      logService.error("Failed to add book", error);
       return {
         success: false,
         message: "Failed to add book",
@@ -95,7 +100,7 @@ class BookService implements IBookService {
         payload: bookUpdated,
       };
     } catch (error) {
-      console.error("Failed to update book", error);
+      logService.error("Failed to update book", error);
       return {
         success: false,
         message: "Failed to update book",
@@ -122,7 +127,7 @@ class BookService implements IBookService {
         payload: { books, total },
       };
     } catch (error) {
-      console.error("Failed to fetch latest books", error);
+      logService.error("Failed to fetch latest books", error);
       return {
         success: false,
         message: "Failed to fetch latest books",
@@ -144,7 +149,7 @@ class BookService implements IBookService {
         payload: await bookRepository.findBookById(id),
       };
     } catch (error) {
-      console.error("Failed to fetch book details", error);
+      logService.error("Failed to fetch book details", error);
       return {
         success: false,
         message: "Failed to fetch book details",
@@ -204,7 +209,7 @@ class BookService implements IBookService {
         payload: booksWithFiles,
       };
     } catch (error) {
-      console.error("Error parsing books in directory:", error);
+      logService.error("Error parsing books in directory:", error);
       return {
         success: false,
         message: "Failed to parse books in directory",

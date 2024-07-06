@@ -16,7 +16,11 @@ import {
 import BookCard from "./components/BookCard";
 import { IBook } from "../../models/Book";
 import UploadBookModal from "./modal/UploadBookModal";
-import { bookServiceRender, fileServiceRender } from "../../app";
+import {
+  bookServiceRender,
+  fileServiceRender,
+  logServiceRender,
+} from "../../app";
 import { useNavigate } from "react-router-dom";
 
 const { Header, Content } = Layout;
@@ -33,13 +37,13 @@ const HomePage: React.FC = () => {
 
   const fetchLatestBooks = async (page: number) => {
     const result = await bookServiceRender.getLatestBooks(page, pageSize);
-    console.log("fetchLatestBooks result: ", result);
+    logServiceRender.info("fetchLatestBooks result: ", result);
     if (result.success) {
       setBooks(result.payload.books);
       setTotalBooks(result.payload.total);
       setCurrentPage(page);
     } else {
-      console.error("Failed to fetch latest books:", result.message);
+      logServiceRender.error("Failed to fetch latest books:", result.message);
     }
   };
 
@@ -51,7 +55,7 @@ const HomePage: React.FC = () => {
     try {
       const bookAddedResult = await bookServiceRender.addBook();
       if (!bookAddedResult.payload) {
-        console.error("Failed to add book:", bookAddedResult.message);
+        logServiceRender.error("Failed to add book:", bookAddedResult.message);
         message.error("添加图书失败");
         return;
       }
@@ -59,7 +63,7 @@ const HomePage: React.FC = () => {
       setCurrentBookId(bookId);
       setIsUploadModalOpen(true);
     } catch (error) {
-      console.error("处理添加图书时出错:", error);
+      logServiceRender.error("处理添加图书时出错:", error);
       message.error("添加图书失败");
     }
   };
@@ -75,13 +79,13 @@ const HomePage: React.FC = () => {
         message.info("未选择目录");
       }
     } catch (error) {
-      console.error("选择目录时出错:", error);
+      logServiceRender.error("选择目录时出错:", error);
       message.error("选择目录失败");
     }
   };
 
   const handleUploadClickEdit = (id: Id) => {
-    console.log("handleUploadClickEdit id: ", id);
+    logServiceRender.info("handleUploadClickEdit id: ", id);
     setCurrentBookId(id);
     setIsUploadModalOpen(true);
   };
@@ -135,8 +139,7 @@ const HomePage: React.FC = () => {
         </Title>
         <Row gutter={[16, 16]}>
           {books.map((book) => {
-            console.log(book);
-            console.log(book.title);
+            logServiceRender.info(book.title);
             return (
               <Col
                 key={book._id.buffer.toString()}

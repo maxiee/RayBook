@@ -5,6 +5,7 @@ import s3Client from "../data/minio/MinioClient";
 import { toObjectId } from "../utils/DtoUtils";
 import { BUCKET_NAME } from "../constants";
 import crypto from "crypto";
+import { logService } from "../services/log/LogServiceImpl";
 
 class BookFileRepostory {
   /**
@@ -34,7 +35,7 @@ class BookFileRepostory {
 
     const existingBookFile = await this.findBookFileByObjectName(objectName);
     if (existingBookFile) {
-      console.log("File already exists");
+      logService.info("File already exists");
       throw new Error("MinIO 中已存在该文件");
     }
 

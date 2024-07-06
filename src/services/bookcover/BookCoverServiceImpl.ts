@@ -3,6 +3,7 @@ import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { IBookCoverService } from "./BookCoverServiceInterface";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { localBookCache } from "../LocalBookCacheService";
+import { logService } from "../log/LogServiceImpl";
 
 class BookCoverService implements IBookCoverService {
   async extractBookCover(bookId: Id, fileId: Id): Promise<ApiResponse<string>> {
@@ -24,7 +25,7 @@ class BookCoverService implements IBookCoverService {
         payload: coverImageUrl,
       };
     } catch (error) {
-      console.error("Error extracting cover image:", error);
+      logService.error("Error extracting cover image:", error);
       return {
         success: false,
         message: "Failed to extract cover image",
@@ -49,7 +50,7 @@ class BookCoverService implements IBookCoverService {
         payload: coverImageUrl,
       };
     } catch (error) {
-      console.error("Error extracting cover image:", error);
+      logService.error("Error extracting cover image:", error);
       return {
         success: false,
         message: "Failed to extract cover image",
@@ -71,7 +72,7 @@ class BookCoverService implements IBookCoverService {
         payload: coverImage,
       };
     } catch (error) {
-      console.error("Error fetching cover image:", error);
+      logService.error("Error fetching cover image:", error);
       return {
         success: false,
         message: "Failed to fetch cover image",
