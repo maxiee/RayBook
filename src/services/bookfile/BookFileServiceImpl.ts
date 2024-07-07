@@ -163,6 +163,31 @@ class BookFileService implements IBookFileService {
       return { success: false, message: "计算或更新MD5失败", payload: null };
     }
   }
+
+  async batchCheckMD5(
+    filePaths: string[]
+  ): Promise<ApiResponse<{ [filePath: string]: string | null }>> {
+    try {
+      const result: { [filePath: string]: string | null } = {};
+      for (const filePath of filePaths) {
+        const md5 = await bookFileRepository.calculateMd5(filePath);
+        const existingFile = await bookFileRepository.findBookFileByMd5(md5);
+        result[filePath] = existingFile ? md5 : null;
+      }
+      return {
+        success: true,
+        message: "MD5 检查完成",
+        payload: result,
+      };
+    } catch (error) {
+      logService.error("批量 MD5 检查出错:", error);
+      return {
+        success: false,
+        message: "批量 MD5 检查失败",
+        payload: null,
+      };
+    }
+  }
 }
 
 export const bookFileService = new BookFileService();

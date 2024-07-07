@@ -83,7 +83,7 @@ class BookFileRepostory {
     ).lean();
   }
 
-  private async calculateMd5(filePath: string): Promise<string> {
+  async calculateMd5(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const hash = crypto.createHash("md5");
       const stream = fs.createReadStream(filePath);

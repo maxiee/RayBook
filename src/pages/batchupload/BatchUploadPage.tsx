@@ -19,6 +19,8 @@ const BatchUploadPage: React.FC = () => {
   const [totalFiles, setTotalFiles] = useState(0);
   const [totalBooks, setTotalBooks] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [duplicateFiles, setDuplicateFiles] = useState<string[]>([]);
+  const [isUploadAllowed, setIsUploadAllowed] = useState(true);
   const [bookWithFileList, setBookWithFileList] = useState<BookWithFiles[]>([]);
   const [bookModelSaveStatus, setBookModelSaveStatus] = useState<{
     [key: string]: "pending" | "success" | "error";
@@ -55,6 +57,31 @@ const BatchUploadPage: React.FC = () => {
 
     setTotalFiles(bookBatch.reduce((acc, book) => acc + book.files.length, 0));
     setTotalBooks(bookBatch.length);
+
+    // 执行 MD5 检查
+    const allFilePaths = bookBatch.flatMap((book) =>
+      book.files.map((file) => file.fullPath)
+    );
+    const md5CheckResult = await bookFileServiceRender.batchCheckMD5(
+      allFilePaths
+    );
+
+    if (md5CheckResult.success && md5CheckResult.payload) {
+      const duplicates = Object.entries(md5CheckResult.payload)
+        .filter(([, md5]) => md5 !== null)
+        .map(([filePath]) => filePath);
+
+      setDuplicateFiles(duplicates);
+
+      if (duplicates.length > 0) {
+        setIsUploadAllowed(false);
+        message.warning("检测到重复文件，请先处理冲突后再上传。");
+      }
+    } else {
+      message.error("MD5 检查失败，无法确保文件唯一性。");
+      setIsUploadAllowed(false);
+    }
+
     setBookWithFileList(bookBatch);
   };
 
@@ -256,6 +283,16 @@ const BatchUploadPage: React.FC = () => {
         return `${successFiles} 成功, ${errorFiles} 失败, ${pendingFiles} 待上传`;
       },
     },
+    {
+      title: "重复检测",
+      key: "fileStatus",
+      render: (record: BookWithFiles) => {
+        const hasDuplicate = record.files.some((file) =>
+          duplicateFiles.includes(file.fullPath)
+        );
+        return hasDuplicate ? "存在重复文件" : "无重复文件";
+      },
+    },
   ];
 
   return (
@@ -267,6 +304,8 @@ const BatchUploadPage: React.FC = () => {
         <Text>扫描到的文件总数：{totalFiles}</Text>
         <br />
         <Text>合并后的书籍总数：{totalBooks}</Text>
+        <br />
+        <Text>重复文件数：{duplicateFiles.length}</Text>
       </Card>
       <Table
         style={{ marginTop: "20px" }}
@@ -274,7 +313,7 @@ const BatchUploadPage: React.FC = () => {
         dataSource={bookWithFileList}
         rowKey="name"
       />
-      {!isUploadComplete && (
+      {isUploadAllowed && !isUploadComplete && (
         <Button
           type="primary"
           size="large"
@@ -286,15 +325,23 @@ const BatchUploadPage: React.FC = () => {
           {isUploading ? "正在上传..." : "开始上传"}
         </Button>
       )}
-      {isUploadComplete && (
-        <Button
-          type="primary"
-          size="large"
-          onClick={handleReturnHome}
-          style={{ marginTop: "20px" }}
-        >
-          返回首页
-        </Button>
+      <Button
+        type="primary"
+        size="large"
+        onClick={handleReturnHome}
+        style={{ marginTop: "20px", marginLeft: "10px" }}
+      >
+        返回首页
+      </Button>
+      {duplicateFiles.length > 0 && (
+        <Card style={{ marginTop: "20px" }}>
+          <Title level={4}>重复文件列表</Title>
+          <ul>
+            {duplicateFiles.map((file, index) => (
+              <li key={index}>{file}</li>
+            ))}
+          </ul>
+        </Card>
       )}
     </div>
   );

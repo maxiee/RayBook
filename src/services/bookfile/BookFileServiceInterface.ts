@@ -47,4 +47,8 @@ export interface IBookFileService {
     bookId: Id,
     fileId: Id
   ): Promise<ApiResponse<IBookFile>>;
+
+  batchCheckMD5(
+    filePaths: string[]
+  ): Promise<ApiResponse<{ [filePath: string]: string | null }>>;
 }
