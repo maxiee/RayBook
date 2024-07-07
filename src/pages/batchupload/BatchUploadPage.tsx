@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { Progress, Table, Typography, Card, message, Button } from "antd";
 import {
   bookCoverServiceRender,
@@ -15,6 +15,7 @@ const { Title, Text } = Typography;
 
 const BatchUploadPage: React.FC = () => {
   const [isUploading, setIsUploading] = useState(false);
+  const [isUploadComplete, setIsUploadComplete] = useState(false);
   const [totalFiles, setTotalFiles] = useState(0);
   const [totalBooks, setTotalBooks] = useState(0);
   const [progress, setProgress] = useState(0);
@@ -27,6 +28,7 @@ const BatchUploadPage: React.FC = () => {
   }>({});
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     const searchParams = new URLSearchParams(location.search);
@@ -190,12 +192,17 @@ const BatchUploadPage: React.FC = () => {
     try {
       await startBatchUpload();
       message.success("批量上传完成");
+      setIsUploadComplete(true);
     } catch (error) {
       logServiceRender.error("批量上传失败:", error);
       message.error("批量上传失败");
     } finally {
       setIsUploading(false);
     }
+  };
+
+  const handleReturnHome = () => {
+    navigate("/");
   };
 
   const columns = [
@@ -267,16 +274,28 @@ const BatchUploadPage: React.FC = () => {
         dataSource={bookWithFileList}
         rowKey="name"
       />
-      <Button
-        type="primary"
-        size="large"
-        onClick={handleStartUpload}
-        disabled={isUploading || bookWithFileList.length === 0}
-        loading={isUploading}
-        style={{ marginTop: "20px" }}
-      >
-        {isUploading ? "正在上传..." : "开始上传"}
-      </Button>
+      {!isUploadComplete && (
+        <Button
+          type="primary"
+          size="large"
+          onClick={handleStartUpload}
+          disabled={isUploading || bookWithFileList.length === 0}
+          loading={isUploading}
+          style={{ marginTop: "20px" }}
+        >
+          {isUploading ? "正在上传..." : "开始上传"}
+        </Button>
+      )}
+      {isUploadComplete && (
+        <Button
+          type="primary"
+          size="large"
+          onClick={handleReturnHome}
+          style={{ marginTop: "20px" }}
+        >
+          返回首页
+        </Button>
+      )}
     </div>
   );
 };
