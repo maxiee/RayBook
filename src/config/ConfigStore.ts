@@ -1,6 +1,6 @@
 import Store from 'electron-store';
 
-type Config = {
+interface Config {
   minioEndpoint?: string;
   minioAccessKey?: string;
   minioSecretKey?: string;
@@ -15,12 +15,11 @@ class ConfigStore {
   }
 
   getConfig(): Config {
-    return this.store.get('config') as Config || {};
+    return this.store.store;
   }
 
   setConfig(config: Partial<Config>): void {
-    const currentConfig = this.getConfig();
-    this.store.set('config', { ...currentConfig, ...config });
+    this.store.set(config);
   }
 
   hasRequiredConfig(): boolean {
