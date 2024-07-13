@@ -25,12 +25,12 @@ class BookFileRepostory {
     const fileStats = fs.statSync(filePath);
     const fileExtension = path.extname(filePath).slice(1);
 
-    // 计算文件的 MD5
-    const md5 = await this.calculateMd5(filePath);
-    // 检查是否存在具有相同 MD5 的文件
-    const existingFile = await this.findBookFileByMd5(md5);
+    // 计算文件的 sha256
+    const sha256 = await this.calculateSha256(filePath);
+    // 检查是否存在具有相同 sha256 的文件
+    const existingFile = await this.findBookFileBySha256(sha256);
     if (existingFile) {
-      throw new Error("已存在具有相同 MD5 的文件");
+      throw new Error("已存在具有相同 sha256 的文件");
     }
 
     const existingBookFile = await this.findBookFileByObjectName(objectName);
@@ -45,7 +45,7 @@ class BookFileRepostory {
       path: objectName,
       size: fileStats.size,
       book: toObjectId(bookId),
-      md5: md5,
+      sha256,
     });
     await newBookFile.save();
 
@@ -74,18 +74,26 @@ class BookFileRepostory {
     return await BookFile.find({ book: toObjectId(bookId) }).lean();
   }
 
-  async updateFileMd5(fileId: Id, filePath: string): Promise<IBookFile | null> {
-    const md5 = await this.calculateMd5(filePath);
-    return await BookFile.findByIdAndUpdate(
-      toObjectId(fileId),
-      { md5 },
-      { new: true }
-    ).lean();
+  async updateFileSha256(
+    fileId: Id,
+    filePath: string
+  ): Promise<IBookFile | null> {
+    try {
+      const sha256 = await this.calculateSha256(filePath);
+      return await BookFile.findByIdAndUpdate(
+        toObjectId(fileId),
+        { sha256 },
+        { new: true }
+      ).lean();
+    } catch (error) {
+      logService.error(`Failed to update SHA256 for file ${fileId}:`, error);
+      return null;
+    }
   }
 
-  async calculateMd5(filePath: string): Promise<string> {
+  async calculateSha256(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
-      const hash = crypto.createHash("md5");
+      const hash = crypto.createHash("sha256");
       const stream = fs.createReadStream(filePath);
       stream.on("data", (data) => hash.update(data));
       stream.on("end", () => resolve(hash.digest("hex")));
@@ -93,8 +101,8 @@ class BookFileRepostory {
     });
   }
 
-  async findBookFileByMd5(md5: string): Promise<IBookFile | null> {
-    return await BookFile.findOne({ md5 }).lean();
+  async findBookFileBySha256(sha256: string): Promise<IBookFile | null> {
+    return await BookFile.findOne({ sha256 }).lean();
   }
 
   //   async removeBookFile(bookId: string, fileId: string): Promise<boolean> {

@@ -3,6 +3,8 @@ import { Button, message, Progress, Table, Typography } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { bookFileServiceRender } from "../../../app";
+import { IBookFile } from "../../../models/BookFile";
+import { toObjectId } from "../../../utils/DtoUtils";
 
 const { Title } = Typography;
 
@@ -10,9 +12,7 @@ const Sha256CompletionPage: React.FC = () => {
   const navigate = useNavigate();
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [results, setResults] = useState<
-    Array<{ fileName: string; status: string }>
-  >([]);
+  const [results, setResults] = useState<IBookFile[]>([]);
 
   const handleBack = () => {
     navigate(-1);
@@ -100,7 +100,7 @@ const Sha256CompletionPage: React.FC = () => {
       <Table
         dataSource={results}
         columns={columns}
-        rowKey={(record) => `${record.fileName}`}
+        rowKey={(record) => `${toObjectId(record._id).toHexString()}`}
       />
     </div>
   );

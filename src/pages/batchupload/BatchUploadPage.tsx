@@ -58,17 +58,17 @@ const BatchUploadPage: React.FC = () => {
     setTotalFiles(bookBatch.reduce((acc, book) => acc + book.files.length, 0));
     setTotalBooks(bookBatch.length);
 
-    // 执行 MD5 检查
+    // 执行 sha256 检查
     const allFilePaths = bookBatch.flatMap((book) =>
       book.files.map((file) => file.fullPath)
     );
-    const md5CheckResult = await bookFileServiceRender.batchCheckMD5(
+    const sha256CheckResult = await bookFileServiceRender.batchCheckSHA256(
       allFilePaths
     );
 
-    if (md5CheckResult.success && md5CheckResult.payload) {
-      const duplicates = Object.entries(md5CheckResult.payload)
-        .filter(([, md5]) => md5 !== null)
+    if (sha256CheckResult.success && sha256CheckResult.payload) {
+      const duplicates = Object.entries(sha256CheckResult.payload)
+        .filter(([, sha256]) => sha256 !== null)
         .map(([filePath]) => filePath);
 
       setDuplicateFiles(duplicates);
@@ -78,7 +78,7 @@ const BatchUploadPage: React.FC = () => {
         message.warning("检测到重复文件，请先处理冲突后再上传。");
       }
     } else {
-      message.error("MD5 检查失败，无法确保文件唯一性。");
+      message.error("sha256 检查失败，无法确保文件唯一性。");
       setIsUploadAllowed(false);
     }
 

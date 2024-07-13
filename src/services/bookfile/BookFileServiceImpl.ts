@@ -135,56 +135,28 @@ class BookFileService implements IBookFileService {
     }
   }
 
-  async calculateAndUpdateMd5(
-    bookId: Id,
-    fileId: Id
-  ): Promise<ApiResponse<IBookFile>> {
-    try {
-      const bookFile = await bookFileRepository.findBookFileById(fileId);
-      if (!bookFile) {
-        return { success: false, message: "文件不存在", payload: null };
-      }
-      const filePath = await localBookCache.getBookFile(bookId, bookFile.path);
-      const updatedBookFile = await bookFileRepository.updateFileMd5(
-        fileId,
-        filePath
-      );
-
-      if (!updatedBookFile) {
-        return { success: false, message: "更新MD5失败", payload: null };
-      }
-
-      return {
-        success: true,
-        message: "成功计算并更新MD5",
-        payload: updatedBookFile,
-      };
-    } catch (error) {
-      logService.error("计算或更新MD5时出错:", error);
-      return { success: false, message: "计算或更新MD5失败", payload: null };
-    }
-  }
-
-  async batchCheckMD5(
+  async batchCheckSHA256(
     filePaths: string[]
   ): Promise<ApiResponse<{ [filePath: string]: string | null }>> {
     try {
       const result: { [filePath: string]: string | null } = {};
       for (const filePath of filePaths) {
-        const md5 = await bookFileRepository.calculateMd5(filePath);
-        const existingFile = await bookFileRepository.findBookFileByMd5(md5);
-        result[filePath] = existingFile ? md5 : null;
+        const sha256 = await bookFileRepository.calculateSha256(filePath);
+        const existingFile = await bookFileRepository.findBookFileBySha256(
+          sha256
+        );
+        result[filePath] = existingFile ? sha256 : null;
       }
       return {
         success: true,
-        message: "MD5 检查完成",
+        message: "SHA256 检查完成",
         payload: result,
       };
     } catch (error) {
-      logService.error("批量 MD5 检查出错:", error);
+      logService.error("批量 SHA256 检查出错:", error);
       return {
         success: false,
-        message: "批量 MD5 检查失败",
+        message: "批量 SHA256 检查失败",
         payload: null,
       };
     }
@@ -211,56 +183,34 @@ class BookFileService implements IBookFileService {
   }
 
   async calculateAndUpdateSha256(
+    bookId: Id,
     fileId: Id
-  ): Promise<ApiResponse<{ fileName: string; status: string }>> {
+  ): Promise<ApiResponse<IBookFile>> {
     try {
-      const bookFile = await BookFile.findById(fileId).lean();
+      const bookFile = await bookFileRepository.findBookFileById(fileId);
       if (!bookFile) {
-        return {
-          success: false,
-          message: "Book file not found",
-          payload: { fileName: "", status: "failed" },
-        };
+        return { success: false, message: "文件不存在", payload: null };
       }
 
-      const filePath = await localBookCache.getBookFile(
-        bookFile.book,
-        bookFile.path
+      const filePath = await localBookCache.getBookFile(bookId, bookFile.path);
+      const updatedBookFile = await bookFileRepository.updateFileSha256(
+        fileId,
+        filePath
       );
 
-      const sha256 = await this.calculateSha256(filePath);
-      bookFile.sha256 = sha256;
-      await bookFile.save();
+      if (!updatedBookFile) {
+        return { success: false, message: "更新SHA256失败", payload: null };
+      }
 
       return {
         success: true,
-        message: "Successfully calculated and updated SHA256",
-        payload: {
-          fileName: bookFile.filename,
-          status: "success",
-        },
+        message: "成功计算并更新SHA256",
+        payload: updatedBookFile,
       };
     } catch (error) {
-      logService.error(`Failed to calculate SHA256 for file ${fileId}:`, error);
-      return {
-        success: false,
-        message: "Failed to calculate and update SHA256",
-        payload: {
-          fileName: "",
-          status: "failed",
-        },
-      };
+      logService.error("计算或更新SHA256时出错:", error);
+      return { success: false, message: "计算或更新SHA256失败", payload: null };
     }
-  }
-
-  private async calculateSha256(filePath: string): Promise<string> {
-    return new Promise((resolve, reject) => {
-      const hash = crypto.createHash("sha256");
-      const stream = fs.createReadStream(filePath);
-      stream.on("data", (data) => hash.update(data));
-      stream.on("end", () => resolve(hash.digest("hex")));
-      stream.on("error", reject);
-    });
   }
 }
 

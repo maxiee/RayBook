@@ -26,8 +26,8 @@ const BookFilesManager: React.FC<BookFilesManagerProps> = ({
   onExtractCover,
   onFilesUpdate,
 }) => {
-  const handleCalculateMd5 = async (fileId: Id) => {
-    const result = await bookFileServiceRender.calculateAndUpdateMd5(
+  const handleCalculateSha256 = async (fileId: Id) => {
+    const result = await bookFileServiceRender.calculateAndUpdateSha256(
       bookId,
       fileId
     );
@@ -43,7 +43,7 @@ const BookFilesManager: React.FC<BookFilesManagerProps> = ({
     { title: "文件名", dataIndex: "filename", key: "filename" },
     { title: "格式", dataIndex: "format", key: "format" },
     { title: "大小", dataIndex: "size", key: "size" },
-    { title: "MD5", dataIndex: "md5", key: "md5" },
+    { title: "sha256", dataIndex: "sha256", key: "sha256" },
     {
       title: "操作",
       key: "action",
@@ -58,10 +58,10 @@ const BookFilesManager: React.FC<BookFilesManagerProps> = ({
           </Button>
           <Button
             icon={<CalculatorOutlined />}
-            onClick={() => handleCalculateMd5(record._id)}
+            onClick={() => handleCalculateSha256(record._id)}
             style={{ marginRight: 8 }}
           >
-            计算MD5
+            计算sha256
           </Button>
           <Button
             icon={<DeleteOutlined />}

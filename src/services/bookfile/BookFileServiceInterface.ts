@@ -37,18 +37,7 @@ export interface IBookFileService {
    */
   getBookFileContent(bookId: Id): Promise<ApiResponse<Buffer | null>>;
 
-  /**
-   * Calculates and updates the MD5 hash of a book file.
-   * @param bookId - The ID of the book.
-   * @param fileId - The ID of the file.
-   * @returns A promise that resolves to the API response containing the updated book file.
-   */
-  calculateAndUpdateMd5(
-    bookId: Id,
-    fileId: Id
-  ): Promise<ApiResponse<IBookFile>>;
-
-  batchCheckMD5(
+  batchCheckSHA256(
     filePaths: string[]
   ): Promise<ApiResponse<{ [filePath: string]: string | null }>>;
 
@@ -57,5 +46,5 @@ export interface IBookFileService {
   calculateAndUpdateSha256(
     bookId: Id,
     fileId: Id
-  ): Promise<ApiResponse<{ fileName: string; status: string }>>;
+  ): Promise<ApiResponse<IBookFile>>;
 }
