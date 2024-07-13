@@ -1,6 +1,13 @@
 import React, { useEffect } from "react";
 import ReactDOM from "react-dom/client";
-import { BrowserRouter as Router, Route, Routes, useNavigate, useLocation, MemoryRouter } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useNavigate,
+  useLocation,
+  MemoryRouter,
+} from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
 import ReaderPage from "./pages/reader/ReaderPage";
 import { createIpcProxy } from "./core/ipc/IpcClient";
@@ -13,6 +20,7 @@ import BatchUploadPage from "./pages/batchupload/BatchUploadPage";
 import { ILogService } from "./services/log/LogServiceInterface";
 import SettingsPage from "./pages/settings/SettingsPage";
 import { configStore } from "./config/ConfigStore";
+import Sha256CompletionPage from "./pages/settings/toolbox/Sha256CompletionPage";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
 export const bookFileServiceRender =
@@ -30,8 +38,8 @@ const AppRoutes: React.FC = () => {
   useEffect(() => {
     logServiceRender.info("AppRoutes started");
     if (!configStore.hasRequiredConfig()) {
-      if (location.pathname !== '/settings') {
-        navigate('/settings');
+      if (location.pathname !== "/settings") {
+        navigate("/settings");
       }
     }
   }, [navigate, location]);
@@ -43,6 +51,10 @@ const AppRoutes: React.FC = () => {
       <Route path="/read/:bookId" element={<ReaderPage />} />
       <Route path="/batch-upload" element={<BatchUploadPage />} />
       <Route path="/settings" element={<SettingsPage />} />
+      <Route
+        path="/sha256-complementation"
+        element={<Sha256CompletionPage />}
+      />
     </Routes>
   );
 };
