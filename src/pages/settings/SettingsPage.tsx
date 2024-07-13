@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Form, Input, Button, message, Row, Col } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Form, Input, Button, message, Row, Col, Card, Space } from "antd";
+import { ArrowLeftOutlined, ToolOutlined } from "@ant-design/icons";
 import { configStore } from "../../config/ConfigStore";
 import { useLocation, useNavigate } from "react-router-dom";
 const { ipcRenderer } = window.require("electron");
@@ -29,6 +29,10 @@ const SettingsPage: React.FC = () => {
 
   const handleBack = () => {
     navigate("/");
+  };
+
+  const handleSha256Complementation = () => {
+    navigate("/sha256-complementation");
   };
 
   return (
@@ -80,6 +84,21 @@ const SettingsPage: React.FC = () => {
           </Button>
         </Form.Item>
       </Form>
+      {!isBlockingPage && (
+        <Card
+          title={
+            <>
+              <ToolOutlined /> 工具箱
+            </>
+          }
+          style={{ marginTop: 20 }}
+        >
+          <Space>
+            <Button onClick={handleSha256Complementation}>SHA256 补齐</Button>
+            {/* 这里可以添加更多工具箱按钮 */}
+          </Space>
+        </Card>
+      )}
     </div>
   );
 };
