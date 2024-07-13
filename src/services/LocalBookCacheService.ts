@@ -4,12 +4,13 @@ import s3Client from "../data/minio/MinioClient";
 import { BUCKET_NAME } from "../constants";
 import { toObjectId } from "../utils/DtoUtils";
 import { logService } from "./log/LogServiceImpl";
+import { configStore } from "../config/ConfigStore";
 
 class LocalBookCacheServcies {
   private cacheDir: string;
 
   constructor() {
-    this.cacheDir = path.join(require("os").homedir(), ".raybook", "books");
+    this.cacheDir = path.join(configStore.getDefaultStoragePath(), "books");
     fs.ensureDirSync(this.cacheDir);
   }
 

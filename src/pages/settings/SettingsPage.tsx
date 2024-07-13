@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { Form, Input, Button, message, Row, Col, Card, Space } from "antd";
-import { ArrowLeftOutlined, ToolOutlined } from "@ant-design/icons";
+import {
+  ArrowLeftOutlined,
+  ToolOutlined,
+  FolderOutlined,
+} from "@ant-design/icons";
 import { configStore } from "../../config/ConfigStore";
 import { useLocation, useNavigate } from "react-router-dom";
+import { fileServiceRender } from "../../app";
 const { ipcRenderer } = window.require("electron");
 
 const SettingsPage: React.FC = () => {
@@ -29,6 +34,13 @@ const SettingsPage: React.FC = () => {
 
   const handleBack = () => {
     navigate("/");
+  };
+
+  const handleSelectStoragePath = async () => {
+    const result = await fileServiceRender.selectDirectory();
+    if (result.success && result.payload) {
+      form.setFieldsValue({ defaultStoragePath: result.payload });
+    }
   };
 
   const handleSha256Complementation = () => {
@@ -78,9 +90,26 @@ const SettingsPage: React.FC = () => {
         >
           <Input />
         </Form.Item>
+        <Form.Item
+          name="defaultStoragePath"
+          label="默认存储路径"
+          rules={[{ required: true }]}
+        >
+          <Input
+            readOnly
+            addonAfter={
+              <Button
+                icon={<FolderOutlined />}
+                onClick={handleSelectStoragePath}
+              >
+                选择
+              </Button>
+            }
+          />
+        </Form.Item>
         <Form.Item>
           <Button type="primary" htmlType="submit">
-            Save Settings
+            保存设置
           </Button>
         </Form.Item>
       </Form>

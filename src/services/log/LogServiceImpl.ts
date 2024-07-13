@@ -1,10 +1,11 @@
 import log from "electron-log";
 import path from "path";
 import { ILogService } from "./LogServiceInterface";
+import { configStore } from "../../config/ConfigStore";
 
 class LogService implements ILogService {
   constructor() {
-    const logPath = path.join(require("os").homedir(), ".raybook", "logs");
+    const logPath = path.join(configStore.getDefaultStoragePath(), "logs");
     log.transports.file.resolvePathFn = () =>
       path.join(logPath, `${new Date().toISOString().split("T")[0]}.log`);
     log.transports.file.level = "info";
