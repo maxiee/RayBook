@@ -193,15 +193,19 @@ class BookFileService implements IBookFileService {
       }
 
       const filePath = await localBookCache.getBookFile(bookId, bookFile.path);
+      logService.debug("Calculating SHA256 for file:", filePath);
       const updatedBookFile = await bookFileRepository.updateFileSha256(
         fileId,
         filePath
       );
+      logService.debug("Updated book file:", updatedBookFile.filename);
 
       if (!updatedBookFile) {
+        logService.debug("Failed to update SHA256");
         return { success: false, message: "更新SHA256失败", payload: null };
       }
 
+      logService.debug("Successfully updated SHA256");
       return {
         success: true,
         message: "成功计算并更新SHA256",
