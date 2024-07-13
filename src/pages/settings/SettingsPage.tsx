@@ -26,10 +26,6 @@ const SettingsPage: React.FC = () => {
     configStore.setConfig(values);
     message.success("设置保存成功");
     ipcRenderer.send("config-updated");
-    if (isBlockingPage) {
-      // 如果是阻塞页面，保存设置后刷新整个应用
-      window.location.reload();
-    }
   };
 
   const handleBack = () => {
