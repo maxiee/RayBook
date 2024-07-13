@@ -12,6 +12,7 @@ import {
   BookOutlined,
   UploadOutlined,
   FolderAddOutlined,
+  SettingOutlined,
 } from "@ant-design/icons";
 import BookCard from "./components/BookCard";
 import { IBook } from "../../models/Book";
@@ -99,6 +100,10 @@ const HomePage: React.FC = () => {
     setCurrentPage(page);
   };
 
+  const handleSettingsClick = () => {
+    navigate("/settings");
+  };
+
   return (
     <Layout className="homepage">
       <Header className="header">
@@ -125,6 +130,14 @@ const HomePage: React.FC = () => {
             <Text type="secondary" style={{ fontSize: "12px" }}>
               同名自动合并
             </Text>
+          </Button>
+          <Button
+            icon={<SettingOutlined />}
+            type="primary"
+            style={{ marginLeft: "20px" }}
+            onClick={handleSettingsClick}
+          >
+            设置
           </Button>
         </Row>
       </Header>
