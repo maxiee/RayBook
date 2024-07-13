@@ -24,7 +24,7 @@ class LocalBookCacheServcies {
     }
 
     logService.info("Book file not in cache, downloading from MinIO");
-    return this.downloadAndCacheFile(idString, filePath, localPath);
+    return await this.downloadAndCacheFile(idString, filePath, localPath);
   }
 
   private getLocalPath(bookId: string, filePath: string): string {
