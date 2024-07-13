@@ -1,6 +1,7 @@
 import fs from "fs";
 import path from "path";
-import { IBookFile } from "../../models/BookFile";
+import crypto from "crypto";
+import { BookFile, IBookFile } from "../../models/BookFile";
 import { IBookFileService } from "./BookFileServiceInterface";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { dialog } from "electron";
@@ -187,6 +188,79 @@ class BookFileService implements IBookFileService {
         payload: null,
       };
     }
+  }
+
+  async getBookFilesWithoutSha256(): Promise<ApiResponse<IBookFile[]>> {
+    try {
+      const bookFiles = await BookFile.find({
+        sha256: { $exists: false },
+      }).lean();
+      return {
+        success: true,
+        message: "Successfully retrieved book files without SHA256",
+        payload: bookFiles,
+      };
+    } catch (error) {
+      logService.error("Error in getBookFilesWithoutSha256:", error);
+      return {
+        success: false,
+        message: "Failed to retrieve book files without SHA256",
+        payload: [],
+      };
+    }
+  }
+
+  async calculateAndUpdateSha256(
+    fileId: Id
+  ): Promise<ApiResponse<{ fileName: string; status: string }>> {
+    try {
+      const bookFile = await BookFile.findById(fileId).lean();
+      if (!bookFile) {
+        return {
+          success: false,
+          message: "Book file not found",
+          payload: { fileName: "", status: "failed" },
+        };
+      }
+
+      const filePath = await localBookCache.getBookFile(
+        bookFile.book,
+        bookFile.path
+      );
+
+      const sha256 = await this.calculateSha256(filePath);
+      bookFile.sha256 = sha256;
+      await bookFile.save();
+
+      return {
+        success: true,
+        message: "Successfully calculated and updated SHA256",
+        payload: {
+          fileName: bookFile.filename,
+          status: "success",
+        },
+      };
+    } catch (error) {
+      logService.error(`Failed to calculate SHA256 for file ${fileId}:`, error);
+      return {
+        success: false,
+        message: "Failed to calculate and update SHA256",
+        payload: {
+          fileName: "",
+          status: "failed",
+        },
+      };
+    }
+  }
+
+  private async calculateSha256(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const hash = crypto.createHash("sha256");
+      const stream = fs.createReadStream(filePath);
+      stream.on("data", (data) => hash.update(data));
+      stream.on("end", () => resolve(hash.digest("hex")));
+      stream.on("error", reject);
+    });
   }
 }
 

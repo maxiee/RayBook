@@ -51,4 +51,11 @@ export interface IBookFileService {
   batchCheckMD5(
     filePaths: string[]
   ): Promise<ApiResponse<{ [filePath: string]: string | null }>>;
+
+  getBookFilesWithoutSha256(): Promise<ApiResponse<IBookFile[]>>;
+
+  calculateAndUpdateSha256(
+    bookId: Id,
+    fileId: Id
+  ): Promise<ApiResponse<{ fileName: string; status: string }>>;
 }
