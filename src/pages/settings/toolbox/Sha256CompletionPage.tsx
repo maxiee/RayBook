@@ -17,6 +17,11 @@ const Sha256CompletionPage: React.FC = () => {
 
   useEffect(() => {
     fetchFilesWithoutSha256();
+    return () => {
+      setFilesToProcess([]);
+      setResults([]);
+      setProgress(0);
+    };
   }, []);
 
   const fetchFilesWithoutSha256 = async () => {
@@ -54,7 +59,14 @@ const Sha256CompletionPage: React.FC = () => {
           file._id
         );
 
-        if (!result.success) {
+        if (result.success) {
+          // 更新 filesToProcess 状态
+          setFilesToProcess((prevFiles) =>
+            prevFiles.map((prevFile) =>
+              prevFile._id === file._id ? result.payload : prevFile
+            )
+          );
+        } else {
           logServiceRender.error(
             `处理文件 ${file.filename} 时出错:`,
             result.message
@@ -90,6 +102,7 @@ const Sha256CompletionPage: React.FC = () => {
       title: "sha256",
       dataIndex: "sha256",
       key: "sha256",
+      render: (sha256: string) => sha256 || "未计算",
     },
     {
       title: "状态",
@@ -127,7 +140,7 @@ const Sha256CompletionPage: React.FC = () => {
         <Progress percent={progress} style={{ marginBottom: "20px" }} />
       )}
       <Table
-        dataSource={filesToProcess}
+        dataSource={results}
         columns={columns}
         rowKey={(record) => toObjectId(record._id).toHexString()}
       />
