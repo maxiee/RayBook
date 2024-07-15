@@ -8,6 +8,7 @@ export interface IBookFile extends Document {
   size: number;
   book: Id;
   sha256?: string; // 新增 sha256 属性
+  location?: string;
 }
 
 const BookFileSchema: Schema = new Schema({
@@ -17,6 +18,7 @@ const BookFileSchema: Schema = new Schema({
   size: { type: Number, required: true },
   book: { type: Schema.Types.ObjectId, ref: "Book", required: true },
   sha256: { type: String, required: false }, // 新增 sha256 字段
+  location: { type: String, required: false },
 });
 
 export const BookFile = mongoose.model<IBookFile>("BookFile", BookFileSchema);

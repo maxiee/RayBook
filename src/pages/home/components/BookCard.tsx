@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from "react";
-import { Card, Menu, Dropdown, MenuProps } from "antd";
+import { Card, Menu, Dropdown, MenuProps, Button } from "antd";
 import { MoreOutlined, EditOutlined, ReadOutlined } from "@ant-design/icons";
 import { IBook } from "../../../models/Book";
 const { ipcRenderer } = window.require("electron");
 import { useNavigate } from "react-router-dom";
 import { serializeId, toObjectId } from "../../../utils/DtoUtils";
-import { bookCoverServiceRender, logServiceRender } from "../../../app";
+import { bookCoverServiceRender, bookFileServiceRender, logServiceRender } from "../../../app";
+import { IBookFile } from "../../../models/BookFile";
 
 interface BookCardProps {
   book: IBook;
@@ -14,8 +15,8 @@ interface BookCardProps {
 
 const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
   const navigate = useNavigate();
-
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
+  const [bookFiles, setBookFiles] = useState<IBookFile[]>([]);
 
   // 获取图书封面
   const getCoverImage = async (coverIamgePath: string) => {
@@ -27,7 +28,21 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
 
   useEffect(() => {
     if (book.coverImagePath) getCoverImage(book.coverImagePath as string);
+    fetchBookFiles();
   }, [book.coverImagePath]);
+
+  const fetchBookFiles = async () => {
+    const result = await bookFileServiceRender.getBookFiles(book._id);
+    if (result.success) {
+      setBookFiles(result.payload);
+    }
+  };
+
+  const handleRead = (bookFileId: Id) => {
+    const serializedBookId = serializeId(book._id);
+    const serializedFileId = serializeId(bookFileId);
+    navigate(`/read/${serializedBookId}/${serializedFileId}`);
+  };  
 
   const items: MenuProps["items"] = [
     {
@@ -39,21 +54,14 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
         </a>
       ),
     },
-    {
-      key: "read",
+    ...bookFiles.map((file) => ({
+      key: `read-${toObjectId(file._id).toHexString()}`,
       label: (
-        <a
-          onClick={() => {
-            logServiceRender.info(toObjectId(book._id).toHexString());
-            const serializedId = serializeId(book._id);
-            navigate(`/read/${serializedId}`);
-          }}
-        >
-          <ReadOutlined />
-          阅读
-        </a>
+        <Button onClick={() => handleRead(file._id)} icon={<ReadOutlined />}>
+          阅读 {file.format}
+        </Button>
       ),
-    },
+    })),
   ];
 
   return (

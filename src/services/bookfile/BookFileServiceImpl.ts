@@ -8,17 +8,18 @@ import { dialog } from "electron";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { localBookCache } from "../LocalBookCacheService";
 import { logService } from "../log/LogServiceImpl";
+import { toObjectId } from "../../utils/DtoUtils";
 
 class BookFileService implements IBookFileService {
-  async getBookFileContent(bookId: Id): Promise<ApiResponse<Buffer | null>> {
+  async getBookFileContent(bookId: Id, bookFileId: Id): Promise<ApiResponse<Buffer | null>> {
     try {
-      const bookFiles = await bookFileRepository.findBookFilesByBookId(bookId);
-      if (bookFiles.length === 0) {
+      const bookFile = await bookFileRepository.findBookFileById(bookFileId);
+      if (!bookFile) {
         return { success: false, message: "No book file found", payload: null };
       }
       const filePath = await localBookCache.getBookFile(
         bookId,
-        bookFiles[0].path
+        bookFile.path
       );
       const content = fs.readFileSync(filePath);
       return {
@@ -50,6 +51,32 @@ class BookFileService implements IBookFileService {
         success: false,
         message: "Failed to fetch book files",
         payload: [],
+      };
+    }
+  }
+
+  async findBookFileByBookFileId(bookFileId: Id): Promise<ApiResponse<IBookFile>> {
+    try {
+      const bookFile = await bookFileRepository.findBookFileById(bookFileId);
+      if (!bookFile) {
+        return {
+          success: false,
+          message: "Book file not found",
+          payload: null,
+        };
+      }
+
+      return {
+        success: true,
+        message: "Successfully found book file",
+        payload: bookFile,
+      };
+    } catch (error) {
+      logService.error("Error finding book file:", error);
+      return {
+        success: false,
+        message: "Failed to find book file",
+        payload: null,
       };
     }
   }
@@ -214,6 +241,41 @@ class BookFileService implements IBookFileService {
     } catch (error) {
       logService.error("计算或更新SHA256时出错:", error);
       return { success: false, message: "计算或更新SHA256失败", payload: null };
+    }
+  }
+
+  async updateBookFileLocation(fileId: Id, location: string): Promise<ApiResponse<IBookFile>> {
+    logService.debug("Updating book file location:", toObjectId(fileId).toHexString(), location);
+    try {
+      const updatedBookFile = await BookFile.findByIdAndUpdate(
+        toObjectId(fileId),
+        { location },
+        { new: true }
+      ).lean();
+
+      if (!updatedBookFile) {
+        logService.error("Failed to update book file location");
+        return {
+          success: false,
+          message: "Failed to update book file location",
+          payload: null,
+        };
+      }
+
+      logService.debug("Successfully updated book file location:", updatedBookFile.location);
+
+      return {
+        success: true,
+        message: "Successfully updated book file location",
+        payload: updatedBookFile,
+      };
+    } catch (error) {
+      logService.error("Error updating book file location:", error);
+      return {
+        success: false,
+        message: "Failed to update book file location",
+        payload: null,
+      };
     }
   }
 }

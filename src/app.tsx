@@ -48,7 +48,7 @@ const AppRoutes: React.FC = () => {
     <Routes>
       <Route path="/" element={<HomePage />} />
       <Route path="/main_window" element={<HomePage />} />
-      <Route path="/read/:bookId" element={<ReaderPage />} />
+      <Route path="/read/:bookId/:fileId" element={<ReaderPage />} />
       <Route path="/batch-upload" element={<BatchUploadPage />} />
       <Route path="/settings" element={<SettingsPage />} />
       <Route

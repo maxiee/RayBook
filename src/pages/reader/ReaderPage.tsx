@@ -5,20 +5,22 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { deserializeId } from "../../utils/DtoUtils";
 import { ReactReader, EpubView } from "react-reader";
 import { bookFileServiceRender, logServiceRender } from "../../app";
-const { ipcRenderer } = window.require("electron");
+import { useBookLocation } from "./hooks/useBookLocation";
 
 const ReaderPage: React.FC = () => {
   const [epubData, setEpubData] = useState<ArrayBuffer | null>(null);
-  const [location, setLocation] = useState<string | number>(0);
-  const { bookId } = useParams<{ bookId: string }>();
+  const { bookId, fileId } = useParams<{ bookId: string; fileId: string }>();
   const navigate = useNavigate();
+  const { location, setLocation, isLoading } = useBookLocation(fileId);
 
   useEffect(() => {
     const fetchBookFile = async () => {
       logServiceRender.info("Fetching book file");
       try {
-        const id = deserializeId(bookId);
-        const result = await bookFileServiceRender.getBookFileContent(id);
+        const result = await bookFileServiceRender.getBookFileContent(
+          deserializeId(bookId),
+          deserializeId(fileId)
+        );
         if (result.success) {
           setEpubData(result.payload.buffer);
         } else {
@@ -33,11 +35,13 @@ const ReaderPage: React.FC = () => {
     if (bookId) {
       fetchBookFile();
     }
-  }, [bookId]);
+  }, [bookId, fileId]);
 
   const handleLocationChanged = (newLocation: string) => {
-    setLocation(newLocation);
-    // You can save the location to the database or local storage here
+    if (!isLoading) {
+      console.log("Location changed:", newLocation);
+      setLocation(newLocation);
+    }
   };
 
   return (
@@ -49,7 +53,7 @@ const ReaderPage: React.FC = () => {
       >
         Back to Library
       </Button>
-      {epubData ? (
+      {!isLoading && epubData ? (
         <div style={{ flex: 1 }}>
           <ReactReader
             url={epubData}

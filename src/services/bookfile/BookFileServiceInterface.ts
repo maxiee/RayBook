@@ -30,12 +30,14 @@ export interface IBookFileService {
    */
   getBookFiles(bookId: Id): Promise<ApiResponse<IBookFile[]>>;
 
+  findBookFileByBookFileId(bookFileId: Id): Promise<ApiResponse<IBookFile>>;
+
   /**
    * Retrieves the content of a book file.
-   * @param bookId - The ID of the book.
+   * @param bookFileId - The ID of the book.
    * @returns A promise that resolves to the API response containing the content of the book file as a Buffer, or null if the file is not found.
    */
-  getBookFileContent(bookId: Id): Promise<ApiResponse<Buffer | null>>;
+  getBookFileContent(bookId: Id, bookFileId: Id): Promise<ApiResponse<Buffer | null>>;
 
   batchCheckSHA256(
     filePaths: string[]
@@ -47,4 +49,6 @@ export interface IBookFileService {
     bookId: Id,
     fileId: Id
   ): Promise<ApiResponse<IBookFile>>;
+
+  updateBookFileLocation(fileId: Id, location: string): Promise<ApiResponse<IBookFile>>;
 }
