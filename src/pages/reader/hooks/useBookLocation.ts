@@ -23,31 +23,23 @@ export const useBookLocation = (bookFileId: string) => {
     fetchLocation();
   }, [bookFileId]);
 
-  const setLocation = useCallback(
-    async (newLocation: string) => {
-      if (isLoading) {
-        logServiceRender.debug(
-          "Location update skipped: still loading initial data"
-        );
-        return;
-      }
+  const setLocation = useCallback((newLocation: string) => {
+    setLocationState(newLocation);
+  }, []);
 
-      logServiceRender.debug("Updating location:", newLocation);
-      if (bookFileId) {
-        const result = await bookFileServiceRender.updateBookFileLocation(
-          deserializeId(bookFileId),
-          newLocation
-        );
-        if (result.success) {
-          logServiceRender.debug("Location updated:", result.payload.location);
-          setLocationState(newLocation);
-        } else {
-          logServiceRender.error("Failed to update location:", result.message);
-        }
+  const saveLocation = useCallback(async () => {
+    if (bookFileId && location) {
+      const result = await bookFileServiceRender.updateBookFileLocation(
+        deserializeId(bookFileId),
+        location
+      );
+      if (result.success) {
+        logServiceRender.debug("Location saved:", result.payload.location);
+      } else {
+        logServiceRender.error("Failed to save location:", result.message);
       }
-    },
-    [bookFileId, isLoading]
-  );
+    }
+  }, [bookFileId, location]);
 
-  return { location, setLocation, isLoading };
+  return { location, setLocation, saveLocation, isLoading };
 };

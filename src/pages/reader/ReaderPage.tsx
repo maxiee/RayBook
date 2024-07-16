@@ -11,7 +11,8 @@ const ReaderPage: React.FC = () => {
   const [epubData, setEpubData] = useState<ArrayBuffer | null>(null);
   const { bookId, fileId } = useParams<{ bookId: string; fileId: string }>();
   const navigate = useNavigate();
-  const { location, setLocation, isLoading } = useBookLocation(fileId);
+  const { location, setLocation, saveLocation, isLoading } =
+    useBookLocation(fileId);
 
   useEffect(() => {
     const fetchBookFile = async () => {
@@ -39,16 +40,21 @@ const ReaderPage: React.FC = () => {
 
   const handleLocationChanged = (newLocation: string) => {
     if (!isLoading) {
-      console.log("Location changed:", newLocation);
+      logServiceRender.debug("Location changed:", newLocation);
       setLocation(newLocation);
     }
+  };
+
+  const handleBackClick = async () => {
+    await saveLocation();
+    navigate("/");
   };
 
   return (
     <div style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
       <Button
         icon={<ArrowLeftOutlined />}
-        onClick={() => navigate("/")}
+        onClick={handleBackClick}
         style={{ margin: "10px" }}
       >
         Back to Library

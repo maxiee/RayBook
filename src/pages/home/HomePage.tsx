@@ -38,7 +38,7 @@ const HomePage: React.FC = () => {
 
   const fetchLatestBooks = async (page: number) => {
     const result = await bookServiceRender.getLatestBooks(page, pageSize);
-    logServiceRender.info("fetchLatestBooks result: ", result);
+    // logServiceRender.info("fetchLatestBooks result: ", result);
     if (result.success) {
       setBooks(result.payload.books);
       setTotalBooks(result.payload.total);
@@ -152,7 +152,7 @@ const HomePage: React.FC = () => {
         </Title>
         <Row gutter={[16, 16]}>
           {books.map((book) => {
-            logServiceRender.info(book.title);
+            // logServiceRender.info(book.title);
             return (
               <Col
                 key={book._id.buffer.toString()}
