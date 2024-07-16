@@ -13,6 +13,7 @@ import {
   UploadOutlined,
   FolderAddOutlined,
   SettingOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
 import BookCard from "./components/BookCard";
 import { IBook } from "../../models/Book";
@@ -23,12 +24,14 @@ import {
   logServiceRender,
 } from "../../app";
 import { useNavigate } from "react-router-dom";
+const { ipcRenderer } = window.require("electron");
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
+  const [isWeixinReadVisible, setIsWeixinReadVisible] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [books, setBooks] = useState<IBook[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -104,41 +107,79 @@ const HomePage: React.FC = () => {
     navigate("/settings");
   };
 
+  const handleWeixinReadClick = () => {
+    ipcRenderer.invoke("weixin-read:show");
+    setIsWeixinReadVisible(true);
+  };
+
+  const handleCloseWeixinRead = () => {
+    ipcRenderer.invoke("weixin-read:hide");
+    setIsWeixinReadVisible(false);
+  };
+
   return (
     <Layout className="homepage">
       <Header className="header">
         <Row>
-          <Title level={2} style={{ color: "white", margin: 0 }}>
-            <BookOutlined /> RayBook
-          </Title>
-          <Button
-            icon={<UploadOutlined />}
-            type="primary"
-            style={{ marginLeft: "20px" }}
-            onClick={handleUploadClickNew}
-          >
-            添加图书
-          </Button>
-          <Button
-            icon={<FolderAddOutlined />}
-            type="primary"
-            style={{ marginLeft: "20px" }}
-            onClick={handleBatchUpload}
-          >
-            批量添加书籍
-            <br />
-            <Text type="secondary" style={{ fontSize: "12px" }}>
-              同名自动合并
-            </Text>
-          </Button>
-          <Button
-            icon={<SettingOutlined />}
-            type="primary"
-            style={{ marginLeft: "20px" }}
-            onClick={handleSettingsClick}
-          >
-            设置
-          </Button>
+          <Col>
+            <Title level={2} style={{ color: "white", margin: 0 }}>
+              <BookOutlined /> RayBook
+            </Title>
+          </Col>
+          <Col>
+            {!isWeixinReadVisible ? (
+              <Button
+                icon={<BookOutlined />}
+                type="primary"
+                onClick={handleWeixinReadClick}
+              >
+                微信读书
+              </Button>
+            ) : (
+              <Button
+                icon={<CloseOutlined />}
+                type="primary"
+                onClick={handleCloseWeixinRead}
+              >
+                关闭微信读书
+              </Button>
+            )}
+            {/* 其他按钮... */}
+          </Col>
+          <Col>
+            <Button
+              icon={<UploadOutlined />}
+              type="primary"
+              style={{ marginLeft: "20px" }}
+              onClick={handleUploadClickNew}
+            >
+              添加图书
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              icon={<FolderAddOutlined />}
+              type="primary"
+              style={{ marginLeft: "20px" }}
+              onClick={handleBatchUpload}
+            >
+              批量添加书籍
+              <br />
+              <Text type="secondary" style={{ fontSize: "12px" }}>
+                同名自动合并
+              </Text>
+            </Button>
+          </Col>
+          <Col>
+            <Button
+              icon={<SettingOutlined />}
+              type="primary"
+              style={{ marginLeft: "20px" }}
+              onClick={handleSettingsClick}
+            >
+              设置
+            </Button>
+          </Col>
         </Row>
       </Header>
       <UploadBookModal
