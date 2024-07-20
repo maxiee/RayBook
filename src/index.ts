@@ -88,59 +88,6 @@ const createWindow = (): void => {
   mainWindow.webContents.openDevTools();
 };
 
-// function createWeixinReadBrowserView(mainWindow: BrowserWindow) {
-//   // 创建一个新的 session
-//   const weixinReadSession = session.fromPartition("weixinread");
-
-//   weixinReadBrowserView = new BrowserView({
-//     webPreferences: {
-//       nodeIntegration: false,
-//       contextIsolation: true,
-//       sandbox: true,
-//       session: weixinReadSession,
-//     },
-//   });
-
-//   weixinReadSession.webRequest.onHeadersReceived((details, callback) => {
-//     const sites =
-//       "https://cdn.weread.qq.com https://midas.gtimg.cn https://*.myqcloud.com https://*.qq.com https://*.qqmail.com https://*.tencent-cloud.com data:";
-//     callback({
-//       responseHeaders: {
-//         ...details.responseHeaders,
-//         "Content-Security-Policy": [
-//           `default-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
-//           `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
-//           `style-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
-//           `img-src 'self' data: ${sites};`,
-//           `font-src 'self' data: ${sites};`,
-//           `connect-src 'self' ${sites};`,
-//           "object-src 'none';",
-//           "base-uri 'self';",
-//         ],
-//       },
-//     });
-//   });
-
-//   mainWindow.setBrowserView(weixinReadBrowserView);
-
-//   function updateBrowserViewBounds() {
-//     const bounds = mainWindow.getBounds();
-//     const titleBarHeight = 64; // 假设标题栏高度为64px，请根据实际情况调整
-//     weixinReadBrowserView.setBounds({
-//       x: 0,
-//       y: titleBarHeight,
-//       width: bounds.width,
-//       height: bounds.height - titleBarHeight,
-//     });
-//   }
-
-//   updateBrowserViewBounds();
-//   mainWindow.on("resize", updateBrowserViewBounds);
-//   // weixinReadBrowserView.webContents.openDevTools();
-//   weixinReadBrowserView.webContents.loadURL("https://weread.qq.com/");
-//   weixinReadBrowserView.setAutoResize({ width: true, height: true });
-// }
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -189,11 +136,35 @@ ipcMain.on("weixin-read:init", (event, contentBounds) => {
   if (!win) return;
 
   if (!weixinReadBrowserView) {
+    // 创建一个新的 session
+    const weixinReadSession = session.fromPartition("weixinread");
+
+    weixinReadSession.webRequest.onHeadersReceived((details, callback) => {
+      const sites =
+        "https://cdn.weread.qq.com https://midas.gtimg.cn https://*.myqcloud.com https://*.qq.com https://*.qqmail.com https://*.tencent-cloud.com data:";
+      callback({
+        responseHeaders: {
+          ...details.responseHeaders,
+          "Content-Security-Policy": [
+            `default-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
+            `script-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
+            `style-src 'self' 'unsafe-inline' 'unsafe-eval' ${sites};`,
+            `img-src 'self' data: ${sites};`,
+            `font-src 'self' data: ${sites};`,
+            `connect-src 'self' ${sites};`,
+            "object-src 'none';",
+            "base-uri 'self';",
+          ],
+        },
+      });
+    });
+
     weixinReadBrowserView = new BrowserView({
       webPreferences: {
         nodeIntegration: false,
         contextIsolation: true,
         sandbox: true,
+        session: weixinReadSession,
       },
     });
 
