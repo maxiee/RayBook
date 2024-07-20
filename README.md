@@ -32,7 +32,7 @@ RayBook 是一个基于 Electron 和 React 的开源电子书管理应用。它�
 1. 克隆仓库:
 
 ```bash
-git clone https://github.com/your-username/raybook.git
+git clone https://github.com/maxiee/RayBook.git
 cd raybook
 ```
 
@@ -42,18 +42,7 @@ cd raybook
 npm install
 ```
 
-3. 配置环境变量:
-
-创建一个 `.env` 文件,并填入以下信息:
-
-```
-MINIO_ENDPOINT=your_minio_endpoint
-MINIO_ACCESS_KEY=your_minio_access_key
-MINIO_SECRET_KEY=your_minio_secret_key
-RAYBOOK_MONGO_URI=your_mongodb_uri
-```
-
-4. 运行应用:
+3. 运行应用:
 
 ```bash
 npm start
