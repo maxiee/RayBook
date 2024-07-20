@@ -34,6 +34,7 @@ const createWindow = (): void => {
   logService.info(MAIN_WINDOW_WEBPACK_ENTRY);
   // Create the browser window.
   mainWindow = new BrowserWindow({
+    title: "RayBook",
     height: 600,
     width: 800,
     webPreferences: {
@@ -170,15 +171,41 @@ ipcMain.on("weixin-read:init", (event, contentBounds) => {
 
     win.setBrowserView(weixinReadBrowserView);
     weixinReadBrowserView.webContents.loadURL("https://weread.qq.com/");
+
+    // 添加窗口大小变化的监听器
+    win.on("resize", () => {
+      mainWindow.webContents.send("window-resize");
+    });
   }
 
   // 设置BrowserView的位置和大小
-  weixinReadBrowserView.setBounds({
-    x: contentBounds.x,
-    y: contentBounds.y,
-    width: contentBounds.width,
-    height: contentBounds.height,
-  });
+  updateWeixinReadBrowserViewBounds(contentBounds);
+});
+
+// 新增更新 BrowserView 大小的函数
+function updateWeixinReadBrowserViewBounds(contentBounds?: {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}) {
+  if (!weixinReadBrowserView) return;
+
+  if (contentBounds) {
+    weixinReadBrowserView.setBounds({
+      x: contentBounds.x,
+      y: contentBounds.y,
+      width: contentBounds.width,
+      height: contentBounds.height,
+    });
+  }
+}
+
+ipcMain.on("weixin-read:resize", (event, contentBounds) => {
+  const win = BrowserWindow.fromWebContents(event.sender);
+  if (win) {
+    updateWeixinReadBrowserViewBounds(contentBounds);
+  }
 });
 
 ipcMain.on("weixin-read:cleanup", (event) => {
