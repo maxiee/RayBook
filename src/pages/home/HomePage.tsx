@@ -13,7 +13,6 @@ import {
   UploadOutlined,
   FolderAddOutlined,
   SettingOutlined,
-  CloseOutlined,
 } from "@ant-design/icons";
 import BookCard from "./components/BookCard";
 import { IBook } from "../../models/Book";
@@ -31,7 +30,6 @@ const { Title, Text } = Typography;
 
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
-  const [isWeixinReadVisible, setIsWeixinReadVisible] = useState(false);
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [books, setBooks] = useState<IBook[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
@@ -108,13 +106,7 @@ const HomePage: React.FC = () => {
   };
 
   const handleWeixinReadClick = () => {
-    ipcRenderer.invoke("weixin-read:show");
-    setIsWeixinReadVisible(true);
-  };
-
-  const handleCloseWeixinRead = () => {
-    ipcRenderer.invoke("weixin-read:hide");
-    setIsWeixinReadVisible(false);
+    navigate("/weixin-read");
   };
 
   return (
@@ -127,24 +119,13 @@ const HomePage: React.FC = () => {
             </Title>
           </Col>
           <Col>
-            {!isWeixinReadVisible ? (
-              <Button
-                icon={<BookOutlined />}
-                type="primary"
-                onClick={handleWeixinReadClick}
-              >
-                微信读书
-              </Button>
-            ) : (
-              <Button
-                icon={<CloseOutlined />}
-                type="primary"
-                onClick={handleCloseWeixinRead}
-              >
-                关闭微信读书
-              </Button>
-            )}
-            {/* 其他按钮... */}
+            <Button
+              icon={<BookOutlined />}
+              type="primary"
+              onClick={handleWeixinReadClick}
+            >
+              微信读书
+            </Button>
           </Col>
           <Col>
             <Button
