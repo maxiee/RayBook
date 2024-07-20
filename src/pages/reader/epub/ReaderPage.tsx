@@ -2,9 +2,9 @@ import React, { useState, useEffect, Component } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Button, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
-import { deserializeId } from "../../utils/DtoUtils";
+import { deserializeId } from "../../../utils/DtoUtils";
 import { ReactReader, EpubView } from "react-reader";
-import { bookFileServiceRender, logServiceRender } from "../../app";
+import { bookFileServiceRender, logServiceRender } from "../../../app";
 import { useBookLocation } from "./hooks/useBookLocation";
 
 const ReaderPage: React.FC = () => {

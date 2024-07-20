@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
-import { bookFileServiceRender, logServiceRender } from "../../../app";
-import { deserializeId } from "../../../utils/DtoUtils";
+import { bookFileServiceRender, logServiceRender } from "../../../../app";
+import { deserializeId } from "../../../../utils/DtoUtils";
 
 export const useBookLocation = (bookFileId: string) => {
   const [location, setLocationState] = useState<string | undefined>();

@@ -9,7 +9,7 @@ import {
   MemoryRouter,
 } from "react-router-dom";
 import HomePage from "./pages/home/HomePage";
-import ReaderPage from "./pages/reader/ReaderPage";
+import ReaderPage from "./pages/reader/epub/ReaderPage";
 import { createIpcProxy } from "./core/ipc/IpcClient";
 import { IBookService } from "./services/book/BookServiceInterface";
 import { IBookFileService } from "./services/bookfile/BookFileServiceInterface";
