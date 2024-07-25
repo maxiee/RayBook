@@ -1,4 +1,11 @@
-import { app, BrowserWindow, BrowserView, ipcMain, session } from "electron";
+import {
+  app,
+  BrowserWindow,
+  BrowserView,
+  ipcMain,
+  session,
+  WebContents,
+} from "electron";
 import mongoose from "mongoose";
 import { minioEndpoint } from "./data/minio/MinioClient";
 import { epubService } from "./services/epub/EpubServiceImpl";
@@ -16,6 +23,8 @@ import Store from "electron-store";
 // whether you're running in development or production).
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
+
+const DEBUG_WEIXIN_READ = true;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -132,7 +141,7 @@ ipcMain.on("config-updated", () => {
   app.exit(0);
 });
 
-ipcMain.on("weixin-read:init", (event, contentBounds) => {
+ipcMain.on("weixin-read:init", async (event, contentBounds) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (!win) return;
 
@@ -169,6 +178,11 @@ ipcMain.on("weixin-read:init", (event, contentBounds) => {
       },
     });
 
+    weixinReadBrowserView.webContents.on("did-navigate", (event, url) => {
+      logService.info("微信读书页面导航到:", url);
+      mainWindow.webContents.send("weixin-reader-url-changed", url);
+    });
+
     win.setBrowserView(weixinReadBrowserView);
     weixinReadBrowserView.webContents.loadURL("https://weread.qq.com/");
 
@@ -180,7 +194,67 @@ ipcMain.on("weixin-read:init", (event, contentBounds) => {
 
   // 设置BrowserView的位置和大小
   updateWeixinReadBrowserViewBounds(contentBounds);
+  setupRequestInterceptor(weixinReadBrowserView.webContents.session);
+  if (DEBUG_WEIXIN_READ) {
+    await setupNetworkListener(weixinReadBrowserView.webContents);
+  }
 });
+
+async function setupNetworkListener(webContents: WebContents) {
+  // 启用网络事件
+  await webContents.debugger.attach("1.3");
+  await webContents.debugger.sendCommand("Network.enable");
+
+  const responseBodyMap = new Map<string, string>();
+
+  webContents.debugger.on("message", (event, method, params) => {
+    if (method === "Network.responseReceived") {
+      const { requestId, response } = params;
+      const { url, mimeType } = response;
+
+      if (
+        // url.includes("weread.qq.com") &&
+        mimeType.includes("application/json")
+      ) {
+        webContents.debugger
+          .sendCommand("Network.getResponseBody", { requestId })
+          .then(({ body, base64Encoded }) => {
+            const decodedBody = base64Encoded ? atob(body) : body;
+            responseBodyMap.set(requestId, decodedBody);
+            logService.info(`API 响应: ${url}`);
+            logService.info("响应体:", JSON.parse(decodedBody));
+          })
+          .catch((error) => {
+            // 打印出错 URL
+            logService.error("error URL:", url);
+            logService.error("获取响应体时出错:", error);
+          });
+      }
+    }
+  });
+
+  webContents.debugger.on("detach", (event, reason) => {
+    logService.info("Debugger detached:", reason);
+  });
+}
+
+const BLOCKED_URLS = [
+  "https://weread.qq.com/sentry/",
+  // 可以在这里添加其他需要拦截的 URL 前缀
+];
+
+function setupRequestInterceptor(sess: Electron.Session) {
+  sess.webRequest.onBeforeRequest((details, callback) => {
+    const shouldBlock = BLOCKED_URLS.some((url) => details.url.startsWith(url));
+    if (shouldBlock) {
+      logService.info("拦截到请求:", details.url);
+      // logService.info("拦截的请求详情:", details.method, details.uploadData);
+      callback({ cancel: true });
+    } else {
+      callback({ cancel: false });
+    }
+  });
+}
 
 // 新增更新 BrowserView 大小的函数
 function updateWeixinReadBrowserViewBounds(contentBounds?: {
@@ -212,6 +286,9 @@ ipcMain.on("weixin-read:cleanup", (event) => {
   const win = BrowserWindow.fromWebContents(event.sender);
   if (win && weixinReadBrowserView) {
     win.removeBrowserView(weixinReadBrowserView);
+    if (DEBUG_WEIXIN_READ) {
+      weixinReadBrowserView.webContents.debugger.detach();
+    }
     weixinReadBrowserView = null;
   }
 });
