@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { Button, Layout } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
+import { debounce } from "ts-debounce";
 const { ipcRenderer } = window.require("electron");
 
 const { Header, Content } = Layout;
@@ -35,7 +36,7 @@ const WeixinReadPage: React.FC = () => {
     };
 
     updateBounds();
-    window.addEventListener("resize", resizeBounds);
+    window.addEventListener("resize", debounce(resizeBounds, 2000));
 
     // 初始化 BrowserView
     ipcRenderer.send("weixin-read:init", contentBounds);
