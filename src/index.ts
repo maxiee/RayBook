@@ -138,7 +138,7 @@ ipcMain.on("weixin-read:init", (event, contentBounds) => {
 
   if (!weixinReadBrowserView) {
     // 创建一个新的 session
-    const weixinReadSession = session.fromPartition("weixinread");
+    const weixinReadSession = session.fromPartition("persist:weread");
 
     weixinReadSession.webRequest.onHeadersReceived((details, callback) => {
       const sites =
