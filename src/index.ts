@@ -64,7 +64,7 @@ const createWindow = (): void => {
       csp = [
         "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: file:;",
         "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
-        `img-src 'self' data: ${minioEndpoint} blob: file:;`,
+        `img-src 'self' data: ${minioEndpoint} cdn.weread.qq.com blob: file:;`,
         "style-src 'self' 'unsafe-inline' blob:;",
         "font-src 'self' data: file:;",
         `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:* file: blob:;`,
@@ -143,17 +143,40 @@ ipcMain.on("config-updated", () => {
   app.exit(0);
 });
 
+// 定义请求数据的类型
+type RequestData = { [key: string]: any };
+
 // 定义处理函数类型
-type WeReadHandler = (bookId: string) => void;
+type WeReadHandler = (bookKey: string) => void;
+
+// 定义每本书的请求数据映射
+type BookRequestMap = Map<string, RequestData>;
+
+// 定义全局数据存储
+const globalBookData: Map<string, BookRequestMap> = new Map();
+
+// 当前正在阅读的书籍的 key
+let currentBookKey: string | null = null;
 
 // 创建一个处理函数
-const handleWeReadUrl: WeReadHandler = (bookId: string) => {
-  logService.info(`Detected WeRead book with ID: ${bookId}`);
-  // 在这里添加您想要执行的操作，例如：
-  // - 更新应用状态
-  // - 发送消息到渲染进程
-  // - 调用其他函数等
+const handleWeReadUrl: WeReadHandler = (bookKey: string) => {
+  logService.info(`Detected WeRead book with Key: ${bookKey}`);
+  currentBookKey = bookKey;
+
+  // 如果这是一本新书，为它创建一个新的 Map
+  if (!globalBookData.has(bookKey)) {
+    globalBookData.set(bookKey, new Map());
+  }
+
+  // 向渲染进程发送消息
+  mainWindow.webContents.send("weixin-read-book-opened", bookKey);
 };
+
+ipcMain.handle("get-book-data", (event, bookKey: string) => {
+  const bookData = globalBookData.get(bookKey);
+  logService.debug("get-book-data 获取书籍数据:", bookData);
+  return bookData ? Object.fromEntries(bookData) : null;
+});
 
 ipcMain.on("weixin-read:init", async (event, contentBounds) => {
   const win = BrowserWindow.fromWebContents(event.sender);
@@ -231,6 +254,23 @@ ipcMain.on("weixin-read:init", async (event, contentBounds) => {
   }
 });
 
+function handleNetworkResponse(url: string, responseBody: string) {
+  if (!currentBookKey) return; // 如果没有当前书籍，直接返回
+
+  const bookData = globalBookData.get(currentBookKey);
+  if (!bookData) return; // 如果没有找到对应的书籍数据，直接返回
+
+  // 这里添加您的规则来匹配不同类型的请求
+  if (url.includes("web/book/bookmarklist")) {
+    bookData.set("bookmarklist", JSON.parse(responseBody));
+  } else if (url.includes("web/book/bestbookmarks")) {
+    bookData.set("bestbookmarks", JSON.parse(responseBody));
+  }
+
+  // 更新全局数据
+  globalBookData.set(currentBookKey, bookData);
+}
+
 async function setupNetworkListener(webContents: WebContents) {
   // 启用网络事件
   await webContents.debugger.attach("1.3");
@@ -254,6 +294,9 @@ async function setupNetworkListener(webContents: WebContents) {
             responseBodyMap.set(requestId, decodedBody);
             logService.info(`API 响应: ${url}`);
             logService.info("响应体:", decodedBody);
+
+            // 调用新的处理函数
+            handleNetworkResponse(url, decodedBody);
           })
           .catch((error) => {
             // 打印出错 URL
