@@ -371,6 +371,7 @@ ipcMain.on("weixin-read:cleanup", (event) => {
     }
     weixinReadBrowserView = null;
   }
+  currentBookKey = null;
 });
 
 // // 删除书籍文件
