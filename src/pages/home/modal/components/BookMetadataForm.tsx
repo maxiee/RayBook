@@ -1,7 +1,16 @@
-import React from 'react';
-import { Form, Input, InputNumber, Row, Col, Upload, Button, Image } from 'antd';
-import { UploadOutlined } from '@ant-design/icons';
-import { IBook } from '../../../../models/Book';
+import React from "react";
+import {
+  Form,
+  Input,
+  InputNumber,
+  Row,
+  Col,
+  Upload,
+  Button,
+  Image,
+} from "antd";
+import { UploadOutlined } from "@ant-design/icons";
+import { IBook } from "../../../../models/Book";
 
 interface BookMetadataFormProps {
   form: any;
@@ -18,7 +27,11 @@ const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
     <Form form={form} layout="vertical">
       <Row gutter={16}>
         <Col span={9}>
-          <Form.Item name="title" label="书名" rules={[{ required: true, message: '请输入书名' }]}>
+          <Form.Item
+            name="title"
+            label="书名"
+            rules={[{ required: true, message: "请输入书名" }]}
+          >
             <Input />
           </Form.Item>
         </Col>
@@ -35,7 +48,11 @@ const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
       </Row>
       <Row gutter={16}>
         <Col span={9}>
-          <Form.Item name="author" label="作者" rules={[{ message: '请输入作者名' }]}>
+          <Form.Item
+            name="author"
+            label="作者"
+            rules={[{ message: "请输入作者名" }]}
+          >
             <Input />
           </Form.Item>
         </Col>
@@ -58,11 +75,23 @@ const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
         </Col>
         <Col span={9}>
           <Form.Item name="publicationYear" label="出版年">
-            <InputNumber style={{ width: '100%' }} />
+            <InputNumber style={{ width: "100%" }} />
           </Form.Item>
         </Col>
         <Col span={6}>
           <Form.Item name="isbn" label="ISBN">
+            <Input />
+          </Form.Item>
+        </Col>
+      </Row>
+      <Row gutter={16}>
+        <Col span={12}>
+          <Form.Item name="weixinBookKey" label="微信读书 key">
+            <Input />
+          </Form.Item>
+        </Col>
+        <Col span={12}>
+          <Form.Item name="weixinBookId" label="微信读书 BookId">
             <Input />
           </Form.Item>
         </Col>
@@ -74,7 +103,7 @@ const BookMetadataForm: React.FC<BookMetadataFormProps> = ({
               <Image
                 src={coverUrl}
                 alt="Book Cover"
-                style={{ maxWidth: '100%', maxHeight: '300px' }}
+                style={{ maxWidth: "100%", maxHeight: "300px" }}
               />
             ) : (
               <Upload

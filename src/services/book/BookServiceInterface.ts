@@ -6,7 +6,7 @@ export interface IBookService {
 
   addBook(): Promise<ApiResponse<IBook>>;
 
-  updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook | null>>;
+  updateBook(bookId: Id, book: Partial<IBook>): Promise<ApiResponse<IBook>>;
 
   findBookById(id: Id): Promise<ApiResponse<IBook>>;
 

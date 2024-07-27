@@ -40,8 +40,14 @@ const UploadBookModal: React.FC<{
         message.error("获取书籍详情失败");
         return;
       }
+      logServiceRender.debug("Fetched book details:", _book.payload);
       setBook(_book.payload);
-      form.setFieldsValue(_book.payload);
+      form.setFieldsValue({
+        ..._book.payload,
+        weixinBookKey: _book.payload.weixinBookKey || "",
+        weixinBookId: _book.payload.weixinBookId || "",
+      });
+      logServiceRender.debug("Form values set:", form.getFieldsValue());
 
       if (_book.payload.coverImagePath) {
         const coverResult = await bookCoverServiceRender.getBookCover(
@@ -66,12 +72,21 @@ const UploadBookModal: React.FC<{
   };
 
   const handleMetadataSubmit = async () => {
+    if (!book || !book._id) {
+      message.error("书籍信息尚未加载完成，请稍后再试");
+      return;
+    }
     try {
       const values = await form.validateFields();
       const bookData: Partial<IBook> = {
         ...values,
+        weixinBookKey: values.weixinBookKey || null,
+        weixinBookId: values.weixinBookId || null,
       };
-      const updatedResult = await bookServiceRender.updateBook(bookData);
+      const updatedResult = await bookServiceRender.updateBook(
+        book._id,
+        bookData
+      );
       form.setFieldsValue(updatedResult.payload);
       if (updatedResult.success) {
         message.success(updatedResult.message);

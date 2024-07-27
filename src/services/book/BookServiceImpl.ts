@@ -94,9 +94,12 @@ class BookService implements IBookService {
     }
   }
 
-  async updateBook(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
+  async updateBook(
+    bookId: Id,
+    book: Partial<IBook>
+  ): Promise<ApiResponse<IBook>> {
     try {
-      const bookUpdated = await bookRepository.updateBook(book);
+      const bookUpdated = await bookRepository.updateBook(bookId, book);
       return {
         success: true,
         message: "Successfully updated book",
@@ -275,11 +278,11 @@ class BookService implements IBookService {
         await coverImageRepository.uploadBookCoverImageFromBuffer(
           newBook._id,
           coverBuffer,
-          "image/jpeg"
+          mimeType
         );
 
       // 更新书籍信息，包含封面 URL
-      const updatedBook = await bookRepository.updateBook({
+      const updatedBook = await bookRepository.updateBook(newBook._id, {
         ...newBook,
         coverImagePath: coverUrl,
       });

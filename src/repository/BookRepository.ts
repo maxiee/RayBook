@@ -27,8 +27,11 @@ class BookRepository {
     return (await Book.create(book)).toObject();
   }
 
-  async updateBook(book: Partial<IBook>): Promise<IBook | null> {
-    return await Book.findByIdAndUpdate(book._id, book, { new: true }).lean();
+  async updateBook(bookId: Id, book: Partial<IBook>): Promise<IBook | null> {
+    logService.info("BookRepository updateBook book: ", book);
+    return await Book.findByIdAndUpdate(toObjectId(bookId), book, {
+      new: true,
+    }).lean();
   }
 
   async delete(id: string): Promise<boolean> {
