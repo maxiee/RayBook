@@ -26,7 +26,7 @@ import { URL } from "url";
 declare const MAIN_WINDOW_WEBPACK_ENTRY: string;
 declare const MAIN_WINDOW_PRELOAD_WEBPACK_ENTRY: string;
 
-const DEBUG_WEIXIN_READ = true;
+const DEBUG_WEIXIN_READ = false;
 
 // Handle creating/removing shortcuts on Windows when installing/uninstalling.
 if (require("electron-squirrel-startup")) {
@@ -249,9 +249,7 @@ ipcMain.on("weixin-read:init", async (event, contentBounds) => {
   // 设置BrowserView的位置和大小
   updateWeixinReadBrowserViewBounds(contentBounds);
   setupRequestInterceptor(weixinReadBrowserView.webContents.session);
-  if (DEBUG_WEIXIN_READ) {
-    await setupNetworkListener(weixinReadBrowserView.webContents);
-  }
+  await setupNetworkListener(weixinReadBrowserView.webContents);
 });
 
 function handleNetworkResponse(url: string, responseBody: string) {
@@ -292,8 +290,10 @@ async function setupNetworkListener(webContents: WebContents) {
           .then(({ body, base64Encoded }) => {
             const decodedBody = base64Encoded ? atob(body) : body;
             responseBodyMap.set(requestId, decodedBody);
-            logService.info(`API 响应: ${url}`);
-            logService.info("响应体:", decodedBody);
+            if (DEBUG_WEIXIN_READ) {
+              logService.info(`API 响应: ${url}`);
+              logService.info("响应体:", decodedBody);
+            }
 
             // 调用新的处理函数
             handleNetworkResponse(url, decodedBody);
