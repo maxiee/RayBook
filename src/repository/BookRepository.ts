@@ -35,6 +35,10 @@ class BookRepository {
     const result = await Book.findByIdAndDelete(id);
     return !!result;
   }
+
+  async findByWeixinBookKey(bookKey: string): Promise<IBook | null> {
+    return await Book.findOne({ weixinBookKey: bookKey }).lean();
+  }
 }
 
 export const bookRepository = new BookRepository();

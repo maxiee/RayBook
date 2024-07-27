@@ -1,5 +1,6 @@
 import path from "path";
 import fs from "fs";
+import { fileTypeFromBuffer } from "file-type";
 import { bookRepository } from "../../repository/BookRepository";
 import { IBook } from "../../models/Book";
 import { BookWithFiles, IBookService } from "./BookServiceInterface";
@@ -9,6 +10,7 @@ import { bookFileRepository } from "../../repository/BookfileRepository";
 import { coverImageRepository } from "../../repository/CoverImageRepostory";
 import { epubService } from "../epub/EpubServiceImpl";
 import { logService } from "../log/LogServiceImpl";
+import axios from "axios";
 
 class BookService implements IBookService {
   async addBookByModel(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
@@ -215,6 +217,84 @@ class BookService implements IBookService {
         success: false,
         message: "Failed to parse books in directory",
         payload: [],
+      };
+    }
+  }
+
+  async findBookByWeixinBookKey(bookKey: string): Promise<ApiResponse<IBook>> {
+    try {
+      const book = await bookRepository.findByWeixinBookKey(bookKey);
+      return {
+        success: true,
+        message: "Successfully found book",
+        payload: book,
+      };
+    } catch (error) {
+      logService.error("Failed to find book by Weixin book key", error);
+      return {
+        success: false,
+        message: "Failed to find book by Weixin book key",
+        payload: null,
+      };
+    }
+  }
+
+  async createBookFromWeixin(
+    bookKey: string,
+    weixinBook: {
+      bookId: string;
+      title: string;
+      author: string;
+      cover: string;
+    }
+  ): Promise<ApiResponse<IBook>> {
+    try {
+      // 下载封面图片
+      const coverResponse = await axios.get(weixinBook.cover, {
+        responseType: "arraybuffer",
+      });
+      const coverBuffer = Buffer.from(coverResponse.data, "binary");
+      // 检测图片的 MIME 类型
+      const fileTypeResult = await fileTypeFromBuffer(coverBuffer);
+      const mimeType = fileTypeResult
+        ? fileTypeResult.mime
+        : "application/octet-stream";
+
+      // 创建新书
+      const newBook = await bookRepository.createNewBook({
+        title: weixinBook.title,
+        author: weixinBook.author,
+        weixinBookKey: bookKey,
+        weixinBookId: weixinBook.bookId,
+        weixinBookTitle: weixinBook.title,
+        weixinBookAuthor: weixinBook.author,
+      });
+
+      // 上传封面到 MinIO
+      const coverUrl =
+        await coverImageRepository.uploadBookCoverImageFromBuffer(
+          newBook._id,
+          coverBuffer,
+          "image/jpeg"
+        );
+
+      // 更新书籍信息，包含封面 URL
+      const updatedBook = await bookRepository.updateBook({
+        ...newBook,
+        coverImagePath: coverUrl,
+      });
+
+      return {
+        success: true,
+        message: "Successfully created book from Weixin",
+        payload: updatedBook,
+      };
+    } catch (error) {
+      logService.error("Failed to create book from Weixin", error);
+      return {
+        success: false,
+        message: "Failed to create book from Weixin",
+        payload: null,
       };
     }
   }

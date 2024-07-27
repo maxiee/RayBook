@@ -95,6 +95,34 @@ export class CoverIamgeRepostory {
 
     return coverUrl;
   }
+
+  async uploadBookCoverImageFromBuffer(
+    bookId: Id,
+    buffer: Buffer,
+    mimeType: string
+  ): Promise<string | null> {
+    const coverObjectName = CoverIamgeRepostory.constructCoverImageFilename(
+      toObjectId(bookId).toHexString(),
+      mimeType
+    );
+
+    await s3Client
+      .putObject({
+        Bucket: BUCKET_NAME,
+        Key: coverObjectName,
+        Body: buffer,
+        ContentType: mimeType,
+      })
+      .promise();
+
+    // 更新书籍的封面路径
+    // TODO 未来 BookRepository 变成单例后，通过单例方法更新封面路径
+    await Book.findByIdAndUpdate(toObjectId(bookId), {
+      coverImagePath: coverObjectName,
+    });
+
+    return coverObjectName;
+  }
 }
 
 export const coverImageRepository = new CoverIamgeRepostory();

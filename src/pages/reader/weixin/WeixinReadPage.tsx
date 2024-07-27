@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from "react";
-import { Avatar, Button, Layout, Typography } from "antd";
-import { ArrowLeftOutlined } from "@ant-design/icons";
+import { Avatar, Button, Layout, Typography, message } from "antd";
+import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
 import { useNavigate } from "react-router-dom";
 import { debounce } from "ts-debounce";
-import { logServiceRender } from "../../../app";
+import { bookServiceRender, logServiceRender } from "../../../app";
 const { ipcRenderer } = window.require("electron");
 
 const { Header, Content } = Layout;
@@ -36,6 +36,8 @@ const WeixinReadPage: React.FC = () => {
     height: 0,
   });
   const [bookData, setBookData] = useState<BookData | null>(null);
+  const [isBookInRayBook, setIsBookInRayBook] = useState<boolean>(false);
+  const [bookKey, setBookKey] = useState<string | null>(null);
 
   useEffect(() => {
     const updateBounds = () => {
@@ -61,9 +63,16 @@ const WeixinReadPage: React.FC = () => {
     // 初始化 BrowserView
     ipcRenderer.send("weixin-read:init", contentBounds);
 
+    const checkBookInRayBook = async (bookKey: string) => {
+      const result = await bookServiceRender.findBookByWeixinBookKey(bookKey);
+      setIsBookInRayBook(result.success && result.payload !== null);
+    };
+
     // 监听新书打开的消息
-    const handleBookOpened = (event: any, bookKey: string) => {
+    const handleBookOpened = async (event: any, bookKey: string) => {
       logServiceRender.info(`New book opened with key: ${bookKey}`);
+      await checkBookInRayBook(bookKey);
+      setBookKey(bookKey);
 
       // 设置3秒定时器
       setTimeout(async () => {
@@ -94,6 +103,21 @@ const WeixinReadPage: React.FC = () => {
 
   const handleBack = () => {
     navigate("/");
+  };
+
+  const handleCreateBook = async () => {
+    if (bookData && bookData.bookmarklist && bookData.bookmarklist.book) {
+      const result = await bookServiceRender.createBookFromWeixin(
+        bookKey,
+        bookData.bookmarklist.book
+      );
+      if (result.success) {
+        message.success("成功创建图书");
+        setIsBookInRayBook(true);
+      } else {
+        message.error("创建图书失败");
+      }
+    }
   };
 
   return (
@@ -149,7 +173,11 @@ const WeixinReadPage: React.FC = () => {
             </div>
           </div>
         )}
-        <div style={{ width: 70 }} /> {/* 为了平衡布局 */}
+        {!isBookInRayBook && (
+          <Button icon={<PlusOutlined />} onClick={handleCreateBook}>
+            添加到 RayBook
+          </Button>
+        )}
       </Header>
       <Content ref={contentRef} style={{ flex: 1 }} />
     </Layout>

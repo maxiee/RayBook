@@ -12,6 +12,10 @@ export interface IBook extends Document {
   publicationYear?: number;
   isbn?: string;
   coverImagePath?: string;
+  weixinBookKey?: string;
+  weixinBookId?: string;
+  weixinBookTitle?: string;
+  weixinBookAuthor?: string;
 }
 
 const BookSchema: Schema = new Schema({
@@ -25,6 +29,10 @@ const BookSchema: Schema = new Schema({
   publicationYear: Number,
   isbn: String,
   coverImagePath: { type: String, required: false },
+  weixinBookKey: { type: String },
+  weixinBookId: { type: String },
+  weixinBookTitle: { type: String },
+  weixinBookAuthor: { type: String },
 });
 
 export default mongoose.model<IBook>("Book", BookSchema);

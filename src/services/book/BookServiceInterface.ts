@@ -18,6 +18,18 @@ export interface IBookService {
   batchParseBooksInDirectory(
     directory: string
   ): Promise<ApiResponse<BookWithFiles[]>>;
+
+  findBookByWeixinBookKey(bookKey: string): Promise<ApiResponse<IBook>>;
+
+  createBookFromWeixin(
+    bookKey: string,
+    weixinBook: {
+      bookId: string;
+      title: string;
+      author: string;
+      cover: string;
+    }
+  ): Promise<ApiResponse<IBook>>;
 }
 
 export interface BookWithFiles {
