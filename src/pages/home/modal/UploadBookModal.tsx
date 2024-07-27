@@ -18,7 +18,8 @@ const UploadBookModal: React.FC<{
   open: boolean;
   onClose: () => void;
   bookId: Id | null;
-}> = ({ open, onClose, bookId }) => {
+  onBookUpdated: () => void;
+}> = ({ open, onClose, bookId, onBookUpdated }) => {
   const [form] = Form.useForm();
   const [book, setBook] = useState<IBook | null>(null);
   const [coverUrl, setCoverUrl] = useState<string | null>(null);
@@ -90,6 +91,7 @@ const UploadBookModal: React.FC<{
       form.setFieldsValue(updatedResult.payload);
       if (updatedResult.success) {
         message.success(updatedResult.message);
+        onBookUpdated(); // 更新父组件的数据
         onClose();
       } else {
         message.error(updatedResult.message);

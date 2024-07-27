@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Layout,
   Typography,
@@ -52,6 +52,10 @@ const HomePage: React.FC = () => {
   useEffect(() => {
     fetchLatestBooks(currentPage);
   }, [currentPage]);
+
+  const handleBookUpdated = useCallback(() => {
+    fetchLatestBooks(currentPage);
+  }, [currentPage, fetchLatestBooks]);
 
   const handleUploadClickNew = async () => {
     try {
@@ -167,6 +171,7 @@ const HomePage: React.FC = () => {
         open={isUploadModalOpen}
         bookId={currentBookId}
         onClose={handleCloseModal}
+        onBookUpdated={handleBookUpdated}
       />
       <Content className="content" style={{ padding: "0 50px" }}>
         <Title level={3} style={{ margin: "16px 0" }}>
