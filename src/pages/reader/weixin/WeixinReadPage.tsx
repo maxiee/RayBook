@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Avatar, Button, Layout, Typography, message } from "antd";
 import { ArrowLeftOutlined, PlusOutlined } from "@ant-design/icons";
-import { useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { debounce } from "ts-debounce";
 import { bookServiceRender, logServiceRender } from "../../../app";
 const { ipcRenderer } = window.require("electron");
@@ -27,6 +27,7 @@ interface BookData {
 }
 
 const WeixinReadPage: React.FC = () => {
+  const location = useLocation();
   const navigate = useNavigate();
   const contentRef = useRef<HTMLDivElement>(null);
   const [contentBounds, setContentBounds] = useState({
@@ -63,6 +64,16 @@ const WeixinReadPage: React.FC = () => {
     // 初始化 BrowserView
     ipcRenderer.send("weixin-read:init", contentBounds);
 
+    const searchParams = new URLSearchParams(location.search);
+    const bookKey = searchParams.get("bookKey");
+    if (bookKey) {
+      // 如果有 bookKey，直接跳转到对应的阅读页面
+      ipcRenderer.send(
+        "weixin-read:navigate",
+        `https://weread.qq.com/web/reader/${bookKey}`
+      );
+    }
+
     const checkBookInRayBook = async (bookKey: string) => {
       const result = await bookServiceRender.findBookByWeixinBookKey(bookKey);
       setIsBookInRayBook(result.success && result.payload !== null);
@@ -93,7 +104,7 @@ const WeixinReadPage: React.FC = () => {
       ipcRenderer.send("weixin-read:cleanup");
       ipcRenderer.removeListener("weixin-read-book-opened", handleBookOpened);
     };
-  }, []);
+  }, [location]);
 
   // 首次渲染时，初始化 BrowserView 的大小
   useEffect(() => {
@@ -173,10 +184,12 @@ const WeixinReadPage: React.FC = () => {
             </div>
           </div>
         )}
-        {!isBookInRayBook && (
+        {!isBookInRayBook ? (
           <Button icon={<PlusOutlined />} onClick={handleCreateBook}>
             添加到 RayBook
           </Button>
+        ) : (
+          <div style={{ width: 70 }} />
         )}
       </Header>
       <Content ref={contentRef} style={{ flex: 1 }} />

@@ -374,6 +374,12 @@ ipcMain.on("weixin-read:cleanup", (event) => {
   currentBookKey = null;
 });
 
+ipcMain.on("weixin-read:navigate", (event, url) => {
+  if (weixinReadBrowserView) {
+    weixinReadBrowserView.webContents.loadURL(url);
+  }
+});
+
 // // 删除书籍文件
 // ipcMain.handle('delete-book-file', async (event, fileId) => {
 //   try {

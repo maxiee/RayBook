@@ -1,11 +1,20 @@
 import React, { useEffect, useState } from "react";
 import { Card, Menu, Dropdown, MenuProps, Button } from "antd";
-import { MoreOutlined, EditOutlined, ReadOutlined } from "@ant-design/icons";
+import {
+  MoreOutlined,
+  EditOutlined,
+  ReadOutlined,
+  WechatOutlined,
+} from "@ant-design/icons";
 import { IBook } from "../../../models/Book";
 const { ipcRenderer } = window.require("electron");
 import { useNavigate } from "react-router-dom";
 import { serializeId, toObjectId } from "../../../utils/DtoUtils";
-import { bookCoverServiceRender, bookFileServiceRender, logServiceRender } from "../../../app";
+import {
+  bookCoverServiceRender,
+  bookFileServiceRender,
+  logServiceRender,
+} from "../../../app";
 import { IBookFile } from "../../../models/BookFile";
 
 interface BookCardProps {
@@ -42,7 +51,11 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
     const serializedBookId = serializeId(book._id);
     const serializedFileId = serializeId(bookFileId);
     navigate(`/read/${serializedBookId}/${serializedFileId}`);
-  };  
+  };
+
+  const handleWeixinRead = () => {
+    navigate(`/weixin-read?bookKey=${book.weixinBookKey}`);
+  };
 
   const items: MenuProps["items"] = [
     {
@@ -62,6 +75,18 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
         </Button>
       ),
     })),
+    ...(book.weixinBookKey
+      ? [
+          {
+            key: "weixin-read",
+            label: (
+              <Button onClick={handleWeixinRead} icon={<WechatOutlined />}>
+                微信阅读
+              </Button>
+            ),
+          },
+        ]
+      : []),
   ];
 
   return (
