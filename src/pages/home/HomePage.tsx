@@ -7,6 +7,7 @@ import {
   Button,
   Pagination,
   message,
+  Tabs,
 } from "antd";
 import {
   BookOutlined,
@@ -23,6 +24,8 @@ import {
   logServiceRender,
 } from "../../app";
 import { useNavigate } from "react-router-dom";
+import TabPane from "antd/es/tabs/TabPane";
+import BookList from "./components/BookList";
 const { ipcRenderer } = window.require("electron");
 
 const { Header, Content } = Layout;
@@ -31,31 +34,64 @@ const { Title, Text } = Typography;
 const HomePage: React.FC = () => {
   const navigate = useNavigate();
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
-  const [books, setBooks] = useState<IBook[]>([]);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [totalBooks, setTotalBooks] = useState(0);
+  const [recentlyAddedBooks, setRecentlyAddedBooks] = useState<IBook[]>([]);
+  const [recentlyReadBooks, setRecentlyReadBooks] = useState<IBook[]>([]);
+  const [recentlyAddedTotal, setRecentlyAddedTotal] = useState(0);
+  const [recentlyReadTotal, setRecentlyReadTotal] = useState(0);
   const [currentBookId, setCurrentBookId] = useState<Id | null>(null);
+  const [recentlyAddedPage, setRecentlyAddedPage] = useState(1);
+  const [recentlyReadPage, setRecentlyReadPage] = useState(1);
+  const [activeTab, setActiveTab] = useState("1");
+
   const pageSize = 10;
 
-  const fetchLatestBooks = async (page: number) => {
+  const fetchRecentlyAddedBooks = async (page: number) => {
     const result = await bookServiceRender.getLatestBooks(page, pageSize);
-    // logServiceRender.info("fetchLatestBooks result: ", result);
     if (result.success) {
-      setBooks(result.payload.books);
-      setTotalBooks(result.payload.total);
-      setCurrentPage(page);
+      setRecentlyAddedBooks(result.payload.books);
+      setRecentlyAddedTotal(result.payload.total);
     } else {
-      logServiceRender.error("Failed to fetch latest books:", result.message);
+      logServiceRender.error(
+        "Failed to fetch recently added books:",
+        result.message
+      );
+      message.error("Failed to fetch recently added books");
+    }
+  };
+
+  const fetchRecentlyReadBooks = async (page: number) => {
+    const result = await bookServiceRender.getRecentlyReadBooks(page, pageSize);
+    if (result.success) {
+      setRecentlyReadBooks(result.payload.books);
+      setRecentlyReadTotal(result.payload.total);
+    } else {
+      logServiceRender.error(
+        "Failed to fetch recently read books:",
+        result.message
+      );
+      message.error("Failed to fetch recently read books");
     }
   };
 
   useEffect(() => {
-    fetchLatestBooks(currentPage);
-  }, [currentPage]);
+    fetchRecentlyAddedBooks(recentlyAddedPage);
+  }, [recentlyAddedPage]);
 
-  const handleBookUpdated = useCallback(() => {
-    fetchLatestBooks(currentPage);
-  }, [currentPage, fetchLatestBooks]);
+  useEffect(() => {
+    fetchRecentlyReadBooks(recentlyReadPage);
+  }, [recentlyReadPage]);
+
+  const handleTabChange = (key: string) => {
+    setActiveTab(key);
+  };
+
+  const handleRecentlyAddedPageChange = (page: number) => {
+    setRecentlyAddedPage(page);
+  };
+
+  const handleRecentlyReadPageChange = (page: number) => {
+    setRecentlyReadPage(page);
+  };
 
   const handleUploadClickNew = async () => {
     try {
@@ -90,7 +126,7 @@ const HomePage: React.FC = () => {
     }
   };
 
-  const handleUploadClickEdit = (id: Id) => {
+  const handleEditBook = (id: Id) => {
     logServiceRender.info("handleUploadClickEdit id: ", id);
     setCurrentBookId(id);
     setIsUploadModalOpen(true);
@@ -99,10 +135,23 @@ const HomePage: React.FC = () => {
   const handleCloseModal = () => {
     setIsUploadModalOpen(false);
     setCurrentBookId(null);
+    fetchRecentlyAddedBooks(recentlyAddedPage);
+    fetchRecentlyReadBooks(recentlyReadPage);
+    message.success("书籍信息已更新");
   };
 
-  const handlePageChange = (page: number) => {
-    setCurrentPage(page);
+  const handleBookUpdated = () => {
+    logServiceRender.info("Book updated");
+
+    // 刷新最近添加的书籍列表
+    fetchRecentlyAddedBooks(recentlyAddedPage);
+    fetchRecentlyReadBooks(recentlyReadPage);
+
+    // 关闭模态框
+    setIsUploadModalOpen(false);
+    setCurrentBookId(null);
+
+    message.success("书籍信息已更新");
   };
 
   const handleSettingsClick = () => {
@@ -174,38 +223,26 @@ const HomePage: React.FC = () => {
         onBookUpdated={handleBookUpdated}
       />
       <Content className="content" style={{ padding: "0 50px" }}>
-        <Title level={3} style={{ margin: "16px 0" }}>
-          最近添加的书籍
-        </Title>
-        <Row gutter={[16, 16]}>
-          {books.map((book) => {
-            // logServiceRender.info(book.title);
-            return (
-              <Col
-                key={book._id.buffer.toString()}
-                xs={24}
-                sm={12}
-                md={8}
-                lg={6}
-                xl={4}
-              >
-                <BookCard
-                  book={book}
-                  onEdit={() => {
-                    handleUploadClickEdit(book._id);
-                  }}
-                />
-              </Col>
-            );
-          })}
-        </Row>
-        <Pagination
-          current={currentPage}
-          total={totalBooks}
-          pageSize={pageSize}
-          onChange={handlePageChange}
-          style={{ marginTop: "20px", textAlign: "center" }}
-        />
+        <Tabs activeKey={activeTab} onChange={handleTabChange}>
+          <TabPane tab="最近添加的书籍" key="1">
+            <BookList
+              books={recentlyAddedBooks}
+              total={recentlyAddedTotal}
+              currentPage={recentlyAddedPage}
+              onPageChange={handleRecentlyAddedPageChange}
+              onEditBook={handleEditBook}
+            />
+          </TabPane>
+          <TabPane tab="最近阅读的书籍" key="2">
+            <BookList
+              books={recentlyReadBooks}
+              total={recentlyReadTotal}
+              currentPage={recentlyReadPage}
+              onPageChange={handleRecentlyReadPageChange}
+              onEditBook={handleEditBook}
+            />
+          </TabPane>
+        </Tabs>
       </Content>
     </Layout>
   );

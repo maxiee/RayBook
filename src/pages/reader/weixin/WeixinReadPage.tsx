@@ -85,6 +85,23 @@ const WeixinReadPage: React.FC = () => {
       await checkBookInRayBook(bookKey);
       setBookKey(bookKey);
 
+      // 更新上次阅读时间
+      try {
+        const result = await bookServiceRender.findBookByWeixinBookKey(bookKey);
+        if (result.success && result.payload) {
+          await bookServiceRender.updateLastReadTime(result.payload._id);
+          logServiceRender.info(
+            `Updated last read time for book: ${result.payload.title}`
+          );
+        } else {
+          logServiceRender.warn(
+            `Book not found in RayBook for key: ${bookKey}`
+          );
+        }
+      } catch (error) {
+        logServiceRender.error("Error updating last read time:", error);
+      }
+
       // 设置3秒定时器
       setTimeout(async () => {
         try {

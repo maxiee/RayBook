@@ -15,6 +15,11 @@ export interface IBookService {
     pageSize: number
   ): Promise<ApiResponse<{ books: IBook[]; total: number }>>;
 
+  getRecentlyReadBooks(
+    page: number,
+    pageSize: number
+  ): Promise<ApiResponse<{ books: IBook[]; total: number }>>;
+
   batchParseBooksInDirectory(
     directory: string
   ): Promise<ApiResponse<BookWithFiles[]>>;
@@ -30,6 +35,8 @@ export interface IBookService {
       cover: string;
     }
   ): Promise<ApiResponse<IBook>>;
+
+  updateLastReadTime(bookId: Id): Promise<ApiResponse<IBook>>;
 }
 
 export interface BookWithFiles {

@@ -2,7 +2,7 @@ import path from "path";
 import fs from "fs";
 import { fileTypeFromBuffer } from "file-type";
 import { bookRepository } from "../../repository/BookRepository";
-import { IBook } from "../../models/Book";
+import Book, { IBook } from "../../models/Book";
 import { BookWithFiles, IBookService } from "./BookServiceInterface";
 import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { dialog } from "electron";
@@ -137,6 +137,34 @@ class BookService implements IBookService {
       return {
         success: false,
         message: "Failed to fetch latest books",
+        payload: { books: [], total: 0 },
+      };
+    }
+  }
+
+  async getRecentlyReadBooks(
+    page: number,
+    pageSize: number
+  ): Promise<ApiResponse<{ books: IBook[]; total: number }>> {
+    try {
+      const [books, total] = await Promise.all([
+        Book.find({ lastReadTime: { $exists: true } })
+          .sort({ lastReadTime: -1 })
+          .skip((page - 1) * pageSize)
+          .limit(pageSize)
+          .lean(),
+        Book.countDocuments({ lastReadTime: { $exists: true } }),
+      ]);
+      return {
+        success: true,
+        message: "Successfully fetched recently read books",
+        payload: { books, total },
+      };
+    } catch (error) {
+      logService.error("Failed to fetch recently read books", error);
+      return {
+        success: false,
+        message: "Failed to fetch recently read books",
         payload: { books: [], total: 0 },
       };
     }
@@ -297,6 +325,26 @@ class BookService implements IBookService {
       return {
         success: false,
         message: "Failed to create book from Weixin",
+        payload: null,
+      };
+    }
+  }
+
+  async updateLastReadTime(bookId: Id): Promise<ApiResponse<IBook>> {
+    try {
+      const updatedBook = await bookRepository.updateBook(bookId, {
+        lastReadTime: new Date(),
+      });
+      return {
+        success: true,
+        message: "Successfully updated last read time",
+        payload: updatedBook,
+      };
+    } catch (error) {
+      logService.error("Failed to update last read time", error);
+      return {
+        success: false,
+        message: "Failed to update last read time",
         payload: null,
       };
     }

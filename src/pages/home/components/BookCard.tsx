@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { format } from "date-fns";
 import { Card, Menu, Dropdown, MenuProps, Button } from "antd";
 import {
   MoreOutlined,
@@ -123,7 +124,17 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
     >
       <Card.Meta
         title={book.title}
-        description={book.author ? book.author : <br />}
+        description={
+          <>
+            {book.author && <div>{book.author}</div>}
+            {book.lastReadTime && (
+              <div>
+                上次阅读:{" "}
+                {format(new Date(book.lastReadTime), "yyyy-MM-dd HH:mm")}
+              </div>
+            )}
+          </>
+        }
       />
     </Card>
   );

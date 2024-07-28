@@ -11,6 +11,7 @@ export interface IBook extends Document {
   publisher?: string;
   publicationYear?: number;
   isbn?: string;
+  lastReadTime?: Date;
   coverImagePath?: string;
   weixinBookKey?: string;
   weixinBookId?: string;
@@ -28,6 +29,7 @@ const BookSchema: Schema = new Schema({
   publisher: String,
   publicationYear: Number,
   isbn: String,
+  lastReadTime: { type: Date },
   coverImagePath: { type: String, required: false },
   weixinBookKey: { type: String },
   weixinBookId: { type: String },
