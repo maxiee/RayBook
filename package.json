@@ -47,6 +47,7 @@
   },
   "license": "MIT",
   "dependencies": {
+    "@types/pdf-parse": "^1.1.4",
     "antd": "^5.18.3",
     "aws-sdk": "^2.1646.0",
     "axios": "^1.7.2",
@@ -58,6 +59,7 @@
     "epub2": "^3.0.2",
     "file-type": "^19.3.0",
     "mongoose": "^8.4.3",
+    "pdf-parse": "^1.1.1",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-reader": "^2.0.10",

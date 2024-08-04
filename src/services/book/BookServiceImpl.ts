@@ -8,11 +8,13 @@ import { ApiResponse } from "../../core/ipc/ApiResponse";
 import { dialog } from "electron";
 import { bookFileRepository } from "../../repository/BookfileRepository";
 import { coverImageRepository } from "../../repository/CoverImageRepostory";
-import { epubService } from "../epub/EpubServiceImpl";
 import { logService } from "../log/LogServiceImpl";
 import axios from "axios";
+import { BookProcessorFactory } from "../../data/processors/BookProcessorFactory";
 
 class BookService implements IBookService {
+  private bookProcessorFactory = new BookProcessorFactory();
+
   async addBookByModel(book: Partial<IBook>): Promise<ApiResponse<IBook>> {
     logService.info(`Adding new book: ${book.title}`);
     try {
@@ -32,6 +34,7 @@ class BookService implements IBookService {
       };
     }
   }
+
   async addBook(): Promise<ApiResponse<IBook>> {
     logService.info("Adding new book");
     try {
@@ -41,29 +44,30 @@ class BookService implements IBookService {
       });
 
       if (result.canceled || result.filePaths.length === 0) {
-        logService.warn("No file selected");
+        logService.info("No file selected");
         return { success: false, message: "No file selected", payload: null };
       }
 
       const filePath = result.filePaths[0];
       const fileName = path.basename(filePath);
       const objectName = `books/${Date.now()}_${fileName}`;
-      logService.warn("add-new-book filePath:", filePath);
-      logService.warn("add-new-book objectName:", objectName);
-      logService.warn("add-new-book fileName:", fileName);
 
-      const metadataModel = await epubService.extractMetadata(filePath);
-      const metadata = metadataModel.payload;
-      logService.info(`Extracted metadata from book: ${metadata.title}`);
+      logService.info("add-new-book filePath:", filePath);
+      logService.info("add-new-book objectName:", objectName);
+      logService.info("add-new-book fileName:", fileName);
 
-      const newBook = await bookRepository.createNewBook({
-        title: metadata.title,
-        author: metadata.creator,
-        publisher: metadata.publisher,
-        isbn: metadata.ISBN,
-        publicationYear: new Date(metadata.date).getFullYear(),
-      });
-      logService.warn("add-new-book newBook:", newBook);
+      const processor = this.bookProcessorFactory.getProcessor(filePath);
+      if (!processor) {
+        return {
+          success: false,
+          message: "Unsupported file type",
+          payload: null,
+        };
+      }
+
+      const metadata = await processor.extractMetadata(filePath);
+      const newBook = await bookRepository.createNewBook(metadata);
+      logService.info("add-new-book newBook:", newBook);
 
       const newUploadBookFile = await bookFileRepository.uploadBookFile(
         newBook._id,
@@ -71,14 +75,16 @@ class BookService implements IBookService {
         fileName,
         objectName
       );
-      logService.warn("add-new-book newUploadBookFile:", newUploadBookFile);
+      logService.info("add-new-book newUploadBookFile:", newUploadBookFile);
 
-      const coverIamgeUrl = await coverImageRepository.uploadBookCoverImage(
-        newBook._id,
-        filePath
-      );
-      logService.warn("add-new-book coverIamgeUrl:", coverIamgeUrl);
-
+      const coverBuffer = await processor.extractCover(filePath);
+      if (coverBuffer) {
+        await coverImageRepository.uploadBookCoverImageFromBuffer(
+          newBook._id,
+          coverBuffer,
+          "image/jpeg" // 假设封面总是 JPEG 格式，实际使用时应该动态确定
+        );
+      }
       return {
         success: true,
         message: "Successfully added book",
