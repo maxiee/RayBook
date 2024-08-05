@@ -22,6 +22,7 @@ import SettingsPage from "./pages/settings/SettingsPage";
 import { configStore } from "./config/ConfigStore";
 import Sha256CompletionPage from "./pages/settings/toolbox/Sha256CompletionPage";
 import WeixinReadPage from "./pages/reader/weixin/WeixinReadPage";
+import PDFReaderPage from "./pages/reader/pdf/PDFReaderPage";
 
 export const bookServiceRender = createIpcProxy<IBookService>("BookService");
 export const bookFileServiceRender =
@@ -50,6 +51,7 @@ const AppRoutes: React.FC = () => {
       <Route path="/" element={<HomePage />} />
       <Route path="/main_window" element={<HomePage />} />
       <Route path="/read/:bookId/:fileId" element={<ReaderPage />} />
+      <Route path="/pdf-read/:bookId/:fileId" element={<PDFReaderPage />} />
       <Route path="/weixin-read" element={<WeixinReadPage />} />
       <Route path="/batch-upload" element={<BatchUploadPage />} />
       <Route path="/settings" element={<SettingsPage />} />

@@ -26,7 +26,6 @@ import {
 import { useNavigate } from "react-router-dom";
 import TabPane from "antd/es/tabs/TabPane";
 import BookList from "./components/BookList";
-const { ipcRenderer } = window.require("electron");
 
 const { Header, Content } = Layout;
 const { Title, Text } = Typography;

@@ -51,7 +51,12 @@ const BookCard: React.FC<BookCardProps> = ({ book, onEdit }) => {
   const handleRead = (bookFileId: Id) => {
     const serializedBookId = serializeId(book._id);
     const serializedFileId = serializeId(bookFileId);
-    navigate(`/read/${serializedBookId}/${serializedFileId}`);
+    const file = bookFiles.find((f) => f._id === bookFileId);
+    if (file && file.format.toLowerCase() === "pdf") {
+      navigate(`/pdf-read/${serializedBookId}/${serializedFileId}`);
+    } else {
+      navigate(`/read/${serializedBookId}/${serializedFileId}`);
+    }
   };
 
   const handleWeixinRead = () => {

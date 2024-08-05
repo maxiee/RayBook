@@ -63,10 +63,11 @@ const createWindow = (): void => {
       // 开发环境的 CSP
       csp = [
         "default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: file:;",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval';",
+        "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: file:;",
         `img-src 'self' data: ${minioEndpoint} cdn.weread.qq.com blob: file:;`,
         "style-src 'self' 'unsafe-inline' blob:;",
         "font-src 'self' data: file:;",
+        "worker-src 'self' blob:;",
         `connect-src 'self' ws: ${minioEndpoint} http://localhost:* http://0.0.0.0:* file: blob:;`,
       ].join(" ");
     } else {
@@ -76,6 +77,7 @@ const createWindow = (): void => {
         `img-src 'self' data: ${minioEndpoint} file:;`,
         "style-src 'self' 'unsafe-inline' blob:;",
         "font-src 'self' data: file:;",
+        "worker-src 'self' blob:;",
         `connect-src 'self' ${minioEndpoint} file: blob:;`,
       ].join(" ");
     }
